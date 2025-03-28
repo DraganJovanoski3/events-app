@@ -1,0 +1,32 @@
+/* app.component.css */
+header {
+    background-color: #2e3b4e;
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  header h1 {
+    margin: 0;
+  }
+  
+  nav a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: white;
+  }
+  
+  nav a.active {
+    text-decoration: underline;
+  }
+  
+  footer {
+    background-color: #2e3b4e;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+  

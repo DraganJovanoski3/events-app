@@ -1,0 +1,19 @@
+<!-- register.component.html -->
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+  <input type="text" formControlName="username" placeholder="Username" />
+  <input type="password" formControlName="password" placeholder="Password" />
+
+  <select formControlName="role">
+    <option value="" disabled selected>Select Role</option>
+    <option value="user">User</option>
+    <option value="local owner">Local Owner</option>
+  </select>
+
+  <!-- Show these fields only for local owners -->
+  <div *ngIf="isLocalOwner">
+    <input type="text" formControlName="localName" placeholder="Local Name" />
+    <input type="email" formControlName="localEmail" placeholder="Local Email" />
+  </div>
+
+  <button type="submit">Register</button>
+</form>

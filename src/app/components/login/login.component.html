@@ -1,0 +1,15 @@
+<!-- src/app/components/login/login.component.html -->
+<form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+    <div>
+      <label for="username">Username:</label>
+      <input id="username" formControlName="username" type="text" />
+    </div>
+    
+    <div>
+      <label for="password">Password:</label>
+      <input id="password" formControlName="password" type="password" />
+    </div>
+    
+    <button type="submit" [disabled]="loginForm.invalid">Login</button>
+  </form>
+  
