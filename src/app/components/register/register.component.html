@@ -1,19 +1,41 @@
-<!-- register.component.html -->
-<form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-  <input type="text" formControlName="username" placeholder="Username" />
-  <input type="password" formControlName="password" placeholder="Password" />
+<h2>Register</h2>
+<form (ngSubmit)="onRegister()">
+  <div>
+    <label for="username">Username:</label>
+    <input type="text" id="username" [(ngModel)]="username" name="username" placeholder="Enter username" required>
+  </div>
 
-  <select formControlName="role">
-    <option value="" disabled selected>Select Role</option>
-    <option value="user">User</option>
-    <option value="local owner">Local Owner</option>
-  </select>
+  <div>
+    <label for="password">Password:</label>
+    <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="Enter password" required>
+  </div>
 
-  <!-- Show these fields only for local owners -->
-  <div *ngIf="isLocalOwner">
-    <input type="text" formControlName="localName" placeholder="Local Name" />
-    <input type="email" formControlName="localEmail" placeholder="Local Email" />
+  <div>
+    <label for="role">Role:</label>
+    <select id="role" [(ngModel)]="role" name="role" required>
+      <option value="">Select role</option>
+      <option value="user">User</option>
+      <option value="bar">Bar</option>
+    </select>
+  </div>
+
+  <!-- Extra field only for role "bar" -->
+  <div *ngIf="role === 'bar'">
+    <label for="barDetail">Bar Detail:</label>
+    <input type="text" id="barDetail" [(ngModel)]="barDetail" name="barDetail" placeholder="Enter bar detail">
+  </div>
+
+  <div>
+    <label for="localName">Local Name:</label>
+    <input type="text" id="localName" [(ngModel)]="localName" name="localName" placeholder="Enter local name">
+  </div>
+
+  <div>
+    <label for="localEmail">Local Email:</label>
+    <input type="email" id="localEmail" [(ngModel)]="localEmail" name="localEmail" placeholder="Enter local email">
   </div>
 
   <button type="submit">Register</button>
 </form>
+
+<p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>

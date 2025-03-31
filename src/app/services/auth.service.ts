@@ -6,19 +6,23 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3001/auth';
+  // Make sure this URL matches your Node.js back-end address and port.
+  private apiUrl = 'http://localhost:3001';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
+  // Send registration data to the backend.
   register(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, userData);
+    return this.http.post(`${this.apiUrl}/auth/register`, userData);
   }
 
+  // Send login credentials to the backend.
   login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials);
+    return this.http.post(`${this.apiUrl}/auth/login`, credentials);
   }
 
+  // Simple check for whether a token exists.
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('authToken');
+    return !!localStorage.getItem('token');
   }
 }

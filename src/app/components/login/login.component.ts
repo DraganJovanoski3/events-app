@@ -1,42 +1,38 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   standalone: true,
   selector: 'app-login',
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'],
-  imports: [CommonModule, ReactiveFormsModule]
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  loginForm: FormGroup;
+  username = '';
+  password = '';
+  errorMessage = '';
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) {
-    this.loginForm = this.fb.group({
-      username: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]]
-    });
-  }
+  constructor(private authService: AuthService, private router: Router) {}
 
-  onLogin(): void {
-    if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value).subscribe(
-        (response) => {
-          localStorage.setItem('authToken', response.token);
-          this.router.navigate(['/event-list']);
+  onLogin() {
+    // Call the AuthService login method.
+    this.authService.login({ username: this.username, password: this.password })
+      .subscribe({
+        next: data => {
+          console.log('Login successful', data);
+          // Store the token in localStorage.
+          localStorage.setItem('token', data.token);
+          // Navigate to a protected route (e.g., dashboard).
+          this.router.navigate(['/dashboard']);
         },
-        (error) => {
-          alert('Login failed. Please check your credentials.');
+        error: err => {
+          console.error('Login error', err);
+          this.errorMessage = err.error.message || 'Invalid credentials. Please try again.';
         }
-      );
-    }
+      });
   }
 }
