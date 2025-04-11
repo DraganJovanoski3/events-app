@@ -1,1 +1,59 @@
-<p>event-list works!</p>
+<!-- Event List Component -->
+<div class="event-list-container">
+  <!-- Location Header -->
+  <div class="location-header fade-in">
+    <h2>Events in {{ userCity || 'your area' }}</h2>
+    <p class="location-subtitle">Discover exciting events happening around you</p>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="search-section fade-in">
+    <div class="search-container">
+      <input type="text" class="form-input search-input" placeholder="Search events...">
+      <button class="btn btn-primary">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+    <div class="filter-container">
+      <select class="form-input">
+        <option value="">All Categories</option>
+        <option value="music">Music</option>
+        <option value="sports">Sports</option>
+        <option value="arts">Arts</option>
+        <option value="food">Food & Drink</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Events Grid -->
+  <div class="events-grid">
+    <div *ngFor="let event of events" class="event-card card fade-in">
+      <div class="event-image">
+        <img [src]="event.imageUrl || 'assets/default-event.jpg'" [alt]="event.title">
+        <div class="event-date">
+          <span class="day">{{ event.date | date:'dd' }}</span>
+          <span class="month">{{ event.date | date:'MMM' }}</span>
+        </div>
+      </div>
+      <div class="event-content">
+        <h3 class="event-title">{{ event.title }}</h3>
+        <p class="event-location">
+          <i class="fas fa-map-marker-alt"></i>
+          {{ event.location }}
+        </p>
+        <p class="event-description">{{ event.description | slice:0:100 }}...</p>
+        <div class="event-footer">
+          <span class="event-category">{{ event.category }}</span>
+          <button class="btn btn-primary">View Details</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="events.length === 0" class="empty-state fade-in">
+    <i class="fas fa-calendar-times"></i>
+    <h3>No events found</h3>
+    <p>Try adjusting your search or check back later for new events.</p>
+  </div>
+</div>

@@ -1,10 +1,18 @@
 <!-- src/app/navbar/navbar.component.html -->
 <nav class="navbar">
-    <ul>
+  <div class="navbar-container">
+    <div class="navbar-brand">
+      <a routerLink="/home">
+        <i class="fas fa-calendar-alt"></i>
+        <span>EventsApp</span>
+      </a>
+    </div>
+    <ul class="navbar-nav">
       <li><a routerLink="/home" routerLinkActive="active">Home</a></li>
       <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
       <li><a routerLink="/register" routerLinkActive="active">Register</a></li>
       <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
     </ul>
-  </nav>
+  </div>
+</nav>
   

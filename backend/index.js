@@ -37,22 +37,51 @@ app.post('/auth/register', (req, res) => {
         return res.status(500).json({ message: 'Error processing password' });
       }
 
-      // Insert the new user
-      const insertQuery = 'INSERT INTO users (username, password, role, barDetail, localName, localEmail) VALUES (?, ?, ?, ?, ?, ?)';
-      db.query(insertQuery, [username, hash, role, barDetail || null, localName, localEmail], (insertErr, results) => {
-        if (insertErr) {
-          console.error('Error inserting user:', insertErr);
-          return res.status(500).json({ message: 'Database error' });
+      // Insert the new user with correct column names
+      const insertQuery = `
+        INSERT INTO users (
+          username, 
+          password, 
+          role, 
+          bar_detail, 
+          local_name, 
+          local_email
+        ) VALUES (?, ?, ?, ?, ?, ?)
+      `;
+      
+      db.query(
+        insertQuery, 
+        [username, hash, role, barDetail || null, localName || null, localEmail || null], 
+        (insertErr, results) => {
+          if (insertErr) {
+            console.error('Error inserting user:', insertErr);
+            return res.status(500).json({ message: 'Database error' });
+          }
+          
+          // Return user data without the password
+          const user = {
+            id: results.insertId,
+            username,
+            role,
+            bar_detail: barDetail,
+            local_name: localName,
+            local_email: localEmail
+          };
+          
+          res.status(201).json({
+            message: 'User registered successfully.',
+            user
+          });
         }
-        const user = { id: results.insertId, username, role, barDetail, localName, localEmail };
-        res.status(201).json({ message: 'User registered successfully.', user });
-      });
+      );
     });
   });
 });
+
 app.get('/', (req, res) => {
   res.send('Welcome to the Events API');
 });
+
 // Login Endpoint
 app.post('/auth/login', (req, res) => {
   const { username, password } = req.body;
@@ -81,9 +110,21 @@ app.post('/auth/login', (req, res) => {
       if (!isMatch) {
         return res.status(401).json({ message: 'Invalid credentials.' });
       }
-      // For demonstration, return a dummy token. Replace with a real token (e.g., JWT) in production.
-      const token = 'dummy-token';
-      res.json({ message: 'Login successful.', token });
+      
+      // Return user data without the password
+      const userData = {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        bar_detail: user.bar_detail,
+        local_name: user.local_name,
+        local_email: user.local_email
+      };
+      
+      res.json({
+        message: 'Login successful.',
+        user: userData
+      });
     });
   });
 });
