@@ -6,98 +6,120 @@
     </div>
 
     <form (ngSubmit)="onRegister()" class="register-form">
-      <div class="form-group">
-        <label for="username" class="form-label">Username</label>
-        <div class="input-group">
-          <i class="fas fa-user"></i>
-          <input 
-            type="text" 
-            id="username" 
-            [(ngModel)]="username" 
-            name="username" 
-            class="form-input" 
-            placeholder="Choose a username" 
-            required
-          >
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input 
+              type="text" 
+              id="username" 
+              [(ngModel)]="username" 
+              name="username" 
+              class="form-input" 
+              placeholder="Choose a username" 
+              required
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input 
+              type="password" 
+              id="password" 
+              [(ngModel)]="password" 
+              name="password" 
+              class="form-input" 
+              placeholder="Create a password" 
+              required
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">Confirm Password</label>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              [(ngModel)]="confirmPassword" 
+              name="confirmPassword" 
+              class="form-input" 
+              placeholder="Confirm password" 
+              required
+            >
+          </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="password" class="form-label">Password</label>
-        <div class="input-group">
-          <i class="fas fa-lock"></i>
-          <input 
-            type="password" 
-            id="password" 
-            [(ngModel)]="password" 
-            name="password" 
-            class="form-input" 
-            placeholder="Create a password" 
-            required
-          >
+      <div class="form-row">
+        <div class="form-group">
+          <label for="localName" class="form-label">Full Name</label>
+          <div class="input-group">
+            <i class="fas fa-id-card"></i>
+            <input 
+              type="text" 
+              id="localName" 
+              [(ngModel)]="localName" 
+              name="localName" 
+              class="form-input" 
+              placeholder="Enter your full name"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="localEmail" class="form-label">Email Address</label>
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input 
+              type="email" 
+              id="localEmail" 
+              [(ngModel)]="localEmail" 
+              name="localEmail" 
+              class="form-input" 
+              placeholder="Enter your email"
+            >
+          </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="role" class="form-label">Account Type</label>
-        <div class="input-group">
-          <i class="fas fa-user-tag"></i>
-          <select 
-            id="role" 
-            [(ngModel)]="role" 
-            name="role" 
-            class="form-input" 
-            required
-          >
-            <option value="">Select account type</option>
-            <option value="user">Event Attendee</option>
-            <option value="bar">Venue Owner</option>
-          </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="role" class="form-label">Account Type</label>
+          <div class="input-group">
+            <i class="fas fa-user-tag"></i>
+            <select 
+              id="role" 
+              [(ngModel)]="role" 
+              name="role" 
+              class="form-input" 
+              required
+            >
+              <option value="">Select account type</option>
+              <option value="user">Event Attendee</option>
+              <option value="bar">Venue Owner</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div class="form-group" *ngIf="role === 'bar'">
-        <label for="barDetail" class="form-label">Venue Details</label>
-        <div class="input-group">
-          <i class="fas fa-info-circle"></i>
-          <input 
-            type="text" 
-            id="barDetail" 
-            [(ngModel)]="barDetail" 
-            name="barDetail" 
-            class="form-input" 
-            placeholder="Enter venue details"
-          >
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="localName" class="form-label">Full Name</label>
-        <div class="input-group">
-          <i class="fas fa-id-card"></i>
-          <input 
-            type="text" 
-            id="localName" 
-            [(ngModel)]="localName" 
-            name="localName" 
-            class="form-input" 
-            placeholder="Enter your full name"
-          >
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="localEmail" class="form-label">Email Address</label>
-        <div class="input-group">
-          <i class="fas fa-envelope"></i>
-          <input 
-            type="email" 
-            id="localEmail" 
-            [(ngModel)]="localEmail" 
-            name="localEmail" 
-            class="form-input" 
-            placeholder="Enter your email"
-          >
+        <div class="form-group" *ngIf="role === 'bar'">
+          <label for="barDetail" class="form-label">Venue Details</label>
+          <div class="input-group">
+            <i class="fas fa-info-circle"></i>
+            <input 
+              type="text" 
+              id="barDetail" 
+              [(ngModel)]="barDetail" 
+              name="barDetail" 
+              class="form-input" 
+              placeholder="Enter venue details"
+            >
+          </div>
         </div>
       </div>
 

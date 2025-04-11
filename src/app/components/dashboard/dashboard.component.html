@@ -1,1 +1,120 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading your dashboard...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="!isLoading && errorMessage">
+    <div class="error-message">
+      <i class="fas fa-exclamation-circle"></i>
+      <h3>Oops! Something went wrong</h3>
+      <p>{{ errorMessage }}</p>
+      <button class="btn btn-primary" (click)="navigateToLogin()">Go to Login</button>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="!isLoading && !errorMessage">
+    <div class="dashboard-header">
+      <h1>Welcome, {{ username }}</h1>
+      <p class="subtitle">Manage your account and activities</p>
+    </div>
+
+    <!-- User Dashboard -->
+    <div class="dashboard-cards" *ngIf="userRole === 'user'">
+      <div class="dashboard-card">
+        <div class="card-icon">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="card-content">
+          <h3>My Events</h3>
+          <p>View and manage events you're attending</p>
+          <button class="btn btn-primary">View Events</button>
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <div class="card-icon">
+          <i class="fas fa-user-edit"></i>
+        </div>
+        <div class="card-content">
+          <h3>Profile Settings</h3>
+          <p>Update your personal information</p>
+          <button class="btn btn-primary" (click)="navigateToVenueWizard()">Edit Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Venue Owner Dashboard -->
+    <div class="dashboard-cards" *ngIf="userRole === 'bar'">
+      <!-- Debug info - remove in production -->
+      <div class="debug-info" *ngIf="userRole === 'bar'">
+        <p>Debug: User Role: {{ userRole }}, Has Venue: {{ hasVenue }}</p>
+      </div>
+      
+      <!-- Show this card if venue is NOT set up -->
+      <div class="dashboard-card venue-setup-card" *ngIf="!hasVenue">
+        <div class="card-icon">
+          <i class="fas fa-store"></i>
+        </div>
+        <div class="card-content">
+          <h3>Set Up Your Venue</h3>
+          <p>Add your venue information, photos, and details to get started</p>
+          <button class="btn btn-primary" (click)="navigateToVenueWizard()">Setup Venue</button>
+        </div>
+      </div>
+
+      <!-- Show these cards if venue IS set up -->
+      <div class="dashboard-card" *ngIf="hasVenue">
+        <div class="card-icon">
+          <i class="fas fa-store"></i>
+        </div>
+        <div class="card-content">
+          <h3>Edit Venue Info</h3>
+          <p>Update your venue details and settings</p>
+          <button class="btn btn-primary" (click)="navigateToVenueWizard()">Edit Venue</button>
+        </div>
+      </div>
+
+      <div class="dashboard-card" *ngIf="hasVenue">
+        <div class="card-icon">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="card-content">
+          <h3>Manage Events</h3>
+          <p>Create and manage events at your venue</p>
+          <button class="btn btn-primary">Manage Events</button>
+        </div>
+      </div>
+
+      <div class="dashboard-card" *ngIf="hasVenue">
+        <div class="card-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="card-content">
+          <h3>Analytics</h3>
+          <p>View attendance and engagement metrics</p>
+          <button class="btn btn-primary">View Analytics</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Default Dashboard (if no role is detected) -->
+    <div class="dashboard-cards" *ngIf="userRole !== 'user' && userRole !== 'bar'">
+      <div class="dashboard-card">
+        <div class="card-icon">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <div class="card-content">
+          <h3>Account Information</h3>
+          <p>Your account type is not recognized. Please contact support.</p>
+          <p><strong>Username:</strong> {{ username }}</p>
+          <p><strong>Role:</strong> {{ userRole || 'Not set' }}</p>
+          <button class="btn btn-primary" (click)="navigateToLogin()">Log Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 export class RegisterComponent {
   username = '';
   password = '';
+  confirmPassword = '';
   role = '';
   barDetail = ''; // Only used if role is "bar"
   localName = '';
@@ -23,6 +24,11 @@ export class RegisterComponent {
   constructor(private authService: AuthService, private router: Router) {}
 
   onRegister() {
+    if (this.password !== this.confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
+      return;
+    }
+
     const userData = {
       username: this.username,
       password: this.password,
@@ -35,6 +41,10 @@ export class RegisterComponent {
     this.authService.register(userData).subscribe({
       next: data => {
         console.log('Registration successful', data);
+        // Store the token in localStorage if it's returned from the server
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
         // Navigate to login page after successful registration.
         this.router.navigate(['/login']);
       },

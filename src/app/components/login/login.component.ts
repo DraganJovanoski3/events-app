@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { AuthStateService } from '../../services/auth-state.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -16,7 +17,11 @@ export class LoginComponent {
   password = '';
   errorMessage = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private authState: AuthStateService,
+    private router: Router
+  ) {}
 
   onLogin() {
     // Call the AuthService login method.
@@ -24,10 +29,14 @@ export class LoginComponent {
       .subscribe({
         next: data => {
           console.log('Login successful', data);
-          // Store the token in localStorage.
-          localStorage.setItem('token', data.token);
-          // Navigate to a protected route (e.g., dashboard).
-          this.router.navigate(['/dashboard']);
+          // Update auth state
+          this.authState.setLoggedIn({
+            token: data.token,
+            username: this.username,
+            role: data.role || 'user'
+          });
+          // Navigate to home page after successful login.
+          this.router.navigate(['/home']);
         },
         error: err => {
           console.error('Login error', err);

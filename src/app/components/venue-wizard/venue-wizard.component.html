@@ -1,0 +1,124 @@
+<div class="wizard-container">
+  <div class="wizard-header">
+    <h2>Venue Setup Wizard</h2>
+    <div class="progress-bar">
+      <div class="progress" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+    </div>
+    <div class="steps">
+      <span [class.active]="currentStep >= 1">Basic Info</span>
+      <span [class.active]="currentStep >= 2">Details</span>
+      <span [class.active]="currentStep >= 3">Amenities</span>
+      <span [class.active]="currentStep >= 4">Hours</span>
+    </div>
+  </div>
+
+  <form [formGroup]="venueForm" (ngSubmit)="submitVenue()">
+    <!-- Step 1: Basic Information -->
+    <div class="step" *ngIf="currentStep === 1">
+      <h3>Basic Information</h3>
+      <div class="form-group">
+        <label for="name">Venue Name</label>
+        <input type="text" id="name" formControlName="name" placeholder="Enter venue name">
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" formControlName="description" rows="4" placeholder="Describe your venue"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="venueType">Venue Type</label>
+        <select id="venueType" formControlName="venueType">
+          <option value="">Select venue type</option>
+          <option *ngFor="let type of venueTypes" [value]="type">{{type}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="capacity">Capacity</label>
+        <input type="number" id="capacity" formControlName="capacity" placeholder="Maximum capacity">
+      </div>
+    </div>
+
+    <!-- Step 2: Contact & Location -->
+    <div class="step" *ngIf="currentStep === 2">
+      <h3>Contact & Location</h3>
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input type="text" id="address" formControlName="address" placeholder="Street address">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" formControlName="city" placeholder="City">
+        </div>
+        <div class="form-group">
+          <label for="zipCode">ZIP Code</label>
+          <input type="text" id="zipCode" formControlName="zipCode" placeholder="ZIP Code">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" formControlName="phone" placeholder="Phone number">
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" formControlName="email" placeholder="Email address">
+      </div>
+      <div class="form-group">
+        <label for="website">Website (Optional)</label>
+        <input type="url" id="website" formControlName="website" placeholder="Website URL">
+      </div>
+    </div>
+
+    <!-- Step 3: Amenities -->
+    <div class="step" *ngIf="currentStep === 3">
+      <h3>Amenities</h3>
+      <div class="amenities-grid">
+        <div class="amenity-item" *ngFor="let amenity of amenities" 
+             [class.selected]="selectedAmenities.includes(amenity)"
+             (click)="toggleAmenity(amenity)">
+          {{amenity}}
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="priceRange">Price Range</label>
+        <select id="priceRange" formControlName="priceRange">
+          <option value="">Select price range</option>
+          <option value="$">$ (Budget-friendly)</option>
+          <option value="$$">$$ (Moderate)</option>
+          <option value="$$$">$$$ (High-end)</option>
+          <option value="$$$$">$$$$ (Luxury)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Venue Images</label>
+        <input type="file" (change)="onFileSelected($event)" multiple accept="image/*">
+        <div class="image-preview" *ngIf="venueImages.length > 0">
+          <div class="image-item" *ngFor="let image of venueImages; let i = index">
+            <img [src]="image" alt="Venue image">
+            <button type="button" class="remove-image" (click)="removeImage(i)">×</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Business Hours -->
+    <div class="step" *ngIf="currentStep === 4">
+      <h3>Business Hours</h3>
+      <div class="business-hours">
+        <div class="hours-row" *ngFor="let hour of businessHours">
+          <div class="day">{{hour.day}}</div>
+          <div class="time-inputs">
+            <input type="time" [value]="hour.open" (change)="updateBusinessHours(hour.day, 'open', $event)">
+            <span>to</span>
+            <input type="time" [value]="hour.close" (change)="updateBusinessHours(hour.day, 'close', $event)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wizard-actions">
+      <button type="button" class="btn-secondary" *ngIf="currentStep > 1" (click)="prevStep()">Previous</button>
+      <button type="button" class="btn-primary" *ngIf="currentStep < totalSteps" (click)="nextStep()">Next</button>
+      <button type="submit" class="btn-primary" *ngIf="currentStep === totalSteps">Complete Setup</button>
+    </div>
+  </form>
+</div> 
