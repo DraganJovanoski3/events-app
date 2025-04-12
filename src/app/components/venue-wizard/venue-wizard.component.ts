@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
 
 @Component({
@@ -8,7 +9,7 @@ import { Router, RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './venue-wizard.component.html',
-  styleUrl: './venue-wizard.component.scss'
+  styleUrl: './venue-wizard.component.scss',
 })
 export class VenueWizardComponent implements OnInit {
   currentStep = 1;
@@ -34,7 +35,7 @@ export class VenueWizardComponent implements OnInit {
     { day: 'Sunday', open: '10:00', close: '17:00' }
   ];
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private http: HttpClient) {
     this.venueForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
@@ -108,23 +109,37 @@ export class VenueWizardComponent implements OnInit {
     const index = this.businessHours.findIndex(hour => hour.day === day);
     if (index !== -1) {
       this.businessHours[index][type] = value;
-    }
+    }  
   }
 
   submitVenue() {
     if (this.venueForm.valid) {
-      const venueData = {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const venueDetail = {
         ...this.venueForm.value,
         amenities: this.selectedAmenities,
         images: this.venueImages,
-        businessHours: this.businessHours
+        businessHours: this.businessHours,
       };
-      
-      console.log('Venue data to submit:', venueData);
-      // Here you would send the data to your backend
-      
-      // For now, just navigate back to dashboard
-      this.router.navigate(['/dashboard']);
+      const username = userData.username
+
+      const payload = {
+        username: username,
+        venueDetail: venueDetail,
+        localName: this.venueForm.value.name,
+        localEmail: this.venueForm.value.email
+      };
+
+      const baseUrl = 'https://4200-idx-events-appgit-1744414439711.clustered-workload.jawstf2k7vqy36oe6.cloudworkstations.dev';
+      const url = new URL('/api/venue', baseUrl).toString();
+      this.http.put(url, payload).subscribe({
+        next: (response) => {
+          console.log('Venue data updated successfully:', response);
+          localStorage.setItem('venueData', JSON.stringify(venueDetail));
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => console.error('Error updating venue data:', error),
+      });
     }
   }
-} 
+}

@@ -13,7 +13,7 @@ app.use(express.json());
 
 // Registration Endpoint
 app.post('/auth/register', (req, res) => {
-  const { username, password, role, barDetail, localName, localEmail } = req.body;
+  const { username, password, role, venueDetail, localName, localEmail } = req.body;
   
   if (!username || !password || !role) {
     return res.status(400).json({ message: 'Missing required fields.' });
@@ -42,7 +42,7 @@ app.post('/auth/register', (req, res) => {
         INSERT INTO users (
           username, 
           password, 
-          role, 
+          role,
           bar_detail, 
           local_name, 
           local_email
@@ -50,7 +50,7 @@ app.post('/auth/register', (req, res) => {
       `;
       
       db.query(
-        insertQuery, 
+        insertQuery,
         [username, hash, role, barDetail || null, localName || null, localEmail || null], 
         (insertErr, results) => {
           if (insertErr) {
@@ -63,7 +63,7 @@ app.post('/auth/register', (req, res) => {
             id: results.insertId,
             username,
             role,
-            bar_detail: barDetail,
+            venue_detail: venueDetail,
             local_name: localName,
             local_email: localEmail
           };
@@ -116,7 +116,7 @@ app.post('/auth/login', (req, res) => {
         id: user.id,
         username: user.username,
         role: user.role,
-        bar_detail: user.bar_detail,
+        venue_detail: user.venue_detail,
         local_name: user.local_name,
         local_email: user.local_email
       };
@@ -129,6 +129,40 @@ app.post('/auth/login', (req, res) => {
   });
 });
 
+// Update Venue Endpoint
+app.put('/api/venue', (req, res) => {
+  // Assuming username is available in the request (e.g., from a token)
+  const { username, venueDetail, localName, localEmail } = req.body;
+
+  if (!username || !venueDetail ) {
+    return res.status(400).json({ message: 'Missing required fields.' });
+  }
+
+  // Update the user's venue details in the database
+  const updateQuery = `
+    UPDATE users 
+    SET venue_detail = ?, local_name = ?, local_email = ? 
+    WHERE username = ?
+  `;
+
+  db.query(updateQuery, [venueDetail, localName || null, localEmail || null, username], (err, results) => {
+    if (err) {
+      console.error('Error updating venue details:', err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    res.json({
+      message: 'Venue details updated successfully.',
+      venueDetail,
+      localName,
+      localEmail
+    });
+  });
+});
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

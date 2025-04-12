@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +17,7 @@ export class DashboardComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private changeDetectorRef: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.isLoading = true;
@@ -55,7 +55,7 @@ export class DashboardComponent implements OnInit {
       if (venueDataStr) {
         try {
           const parsedVenueData = JSON.parse(venueDataStr);
-          this.hasVenue = !!parsedVenueData && Object.keys(parsedVenueData).length > 0;
+          this.hasVenue = !!parsedVenueData;
           console.log('Has Venue:', this.hasVenue);
         } catch (e) {
           console.error('Error parsing venue data:', e);
@@ -81,6 +81,7 @@ export class DashboardComponent implements OnInit {
     } finally {
       this.isLoading = false;
     }
+    this.changeDetectorRef.detectChanges();
   }
 
   navigateToVenueWizard() {
