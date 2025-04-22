@@ -1,6 +1,8 @@
 // index.js
 const express = require('express');
 const cors = require('cors');
+// Use bcryptjs as a drop-in replacement if needed:
+// const bcrypt = require('bcryptjs');
 const bcrypt = require('bcrypt');
 const db = require('./db');
 
@@ -13,8 +15,10 @@ app.use(express.json());
 
 // Registration Endpoint
 app.post('/auth/register', (req, res) => {
-  const { username, password, role, venueDetail, localName, localEmail } = req.body;
-  
+  // Destructure the request body
+  const { username, password, role, barDetail, localName, localEmail } = req.body;
+
+  // Check for required fields
   if (!username || !password || !role) {
     return res.status(400).json({ message: 'Missing required fields.' });
   }
@@ -37,7 +41,7 @@ app.post('/auth/register', (req, res) => {
         return res.status(500).json({ message: 'Error processing password' });
       }
 
-      // Insert the new user with correct column names
+      // Insert the new user into the database
       const insertQuery = `
         INSERT INTO users (
           username, 
@@ -51,19 +55,19 @@ app.post('/auth/register', (req, res) => {
       
       db.query(
         insertQuery,
-        [username, hash, role, barDetail || null, localName || null, localEmail || null], 
+        [username, hash, role, barDetail || null, localName || null, localEmail || null],
         (insertErr, results) => {
           if (insertErr) {
             console.error('Error inserting user:', insertErr);
             return res.status(500).json({ message: 'Database error' });
           }
           
-          // Return user data without the password
+          // Build the user object without the password field
           const user = {
             id: results.insertId,
             username,
             role,
-            venue_detail: venueDetail,
+            bar_detail: barDetail,
             local_name: localName,
             local_email: localEmail
           };
@@ -78,6 +82,7 @@ app.post('/auth/register', (req, res) => {
   });
 });
 
+// Home Endpoint
 app.get('/', (req, res) => {
   res.send('Welcome to the Events API');
 });
@@ -101,7 +106,7 @@ app.post('/auth/login', (req, res) => {
     }
 
     const user = results[0];
-    // Compare the password
+    // Compare the provided password with the stored hashed password
     bcrypt.compare(password, user.password, (compareErr, isMatch) => {
       if (compareErr) {
         console.error('Error comparing passwords:', compareErr);
@@ -111,12 +116,12 @@ app.post('/auth/login', (req, res) => {
         return res.status(401).json({ message: 'Invalid credentials.' });
       }
       
-      // Return user data without the password
+      // Build the user data for the response without the password
       const userData = {
         id: user.id,
         username: user.username,
         role: user.role,
-        venue_detail: user.venue_detail,
+        bar_detail: user.bar_detail,
         local_name: user.local_name,
         local_email: user.local_email
       };
@@ -131,21 +136,21 @@ app.post('/auth/login', (req, res) => {
 
 // Update Venue Endpoint
 app.put('/api/venue', (req, res) => {
-  // Assuming username is available in the request (e.g., from a token)
-  const { username, venueDetail, localName, localEmail } = req.body;
+  // Expecting the username, barDetail, localName, and localEmail in the request body.
+  const { username, barDetail, localName, localEmail } = req.body;
 
-  if (!username || !venueDetail ) {
+  if (!username || !barDetail) {
     return res.status(400).json({ message: 'Missing required fields.' });
   }
 
   // Update the user's venue details in the database
   const updateQuery = `
     UPDATE users 
-    SET venue_detail = ?, local_name = ?, local_email = ? 
+    SET bar_detail = ?, local_name = ?, local_email = ? 
     WHERE username = ?
   `;
 
-  db.query(updateQuery, [venueDetail, localName || null, localEmail || null, username], (err, results) => {
+  db.query(updateQuery, [barDetail, localName || null, localEmail || null, username], (err, results) => {
     if (err) {
       console.error('Error updating venue details:', err);
       return res.status(500).json({ message: 'Database error' });
@@ -157,12 +162,13 @@ app.put('/api/venue', (req, res) => {
 
     res.json({
       message: 'Venue details updated successfully.',
-      venueDetail,
-      localName,
-      localEmail
+      bar_detail: barDetail,
+      local_name: localName,
+      local_email: localEmail
     });
   });
 });
+
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

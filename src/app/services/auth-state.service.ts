@@ -1,41 +1,47 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthStateService {
-  private isLoggedInSubject = new BehaviorSubject<boolean>(false);
-  private userDataSubject = new BehaviorSubject<any>({});
-
-  isLoggedIn$ = this.isLoggedInSubject.asObservable();
-  userData$ = this.userDataSubject.asObservable();
+  private isLoggedInSignal = signal(this.getStoredLoginState());
+  private usernameSignal = signal(this.getStoredUsername());
 
   constructor() {
     // Initialize from localStorage
-    this.checkAuthState();
+    this.isLoggedInSignal.set(this.getStoredLoginState());
+    this.usernameSignal.set(this.getStoredUsername());
   }
 
-  checkAuthState() {
-    const token = localStorage.getItem('token');
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    this.isLoggedInSubject.next(!!token);
-    this.userDataSubject.next(userData);
+  private getStoredLoginState(): boolean {
+    return localStorage.getItem('isLoggedIn') === 'true';
   }
 
-  setLoggedIn(userData: any) {
-    localStorage.setItem('token', userData.token);
-    localStorage.setItem('userData', JSON.stringify({
-      username: userData.username,
-      role: userData.role || 'user'
-    }));
-    this.checkAuthState();
+  private getStoredUsername(): string {
+    return localStorage.getItem('username') || '';
+  }
+
+  isLoggedIn() {
+    return this.isLoggedInSignal();
+  }
+
+  getUsername() {
+    return this.usernameSignal();
+  }
+
+  login(username: string) {
+    this.isLoggedInSignal.set(true);
+    this.usernameSignal.set(username);
+    // Store in localStorage
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('username', username);
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userData');
-    this.isLoggedInSubject.next(false);
-    this.userDataSubject.next({});
+    this.isLoggedInSignal.set(false);
+    this.usernameSignal.set('');
+    // Clear localStorage
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('username');
   }
 } 

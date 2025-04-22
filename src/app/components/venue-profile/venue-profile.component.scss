@@ -1,0 +1,321 @@
+.venue-profile {
+  background-color: #f0f2f5;
+  min-height: 100vh;
+}
+
+// Cover Photo
+.cover-photo-container {
+  position: relative;
+  height: 400px;
+  width: 100%;
+  overflow: hidden;
+
+  .cover-photo {
+    height: 100%;
+    width: 100%;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .cover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+  }
+}
+
+// Profile Header
+.profile-header {
+  position: relative;
+  background: white;
+  padding: 20px;
+  margin-top: -100px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: flex-end;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 1;
+
+  .profile-photo-container {
+    margin-right: 20px;
+    position: relative;
+    top: -100px;
+
+    .profile-photo {
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 4px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+
+  .profile-info {
+    flex: 1;
+    margin-top: -80px;
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0 0 16px;
+      color: #1c1e21;
+    }
+
+    .venue-meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+
+      span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        color: #65676b;
+
+        i {
+          color: #1877f2;
+        }
+      }
+    }
+  }
+}
+
+// Main Content
+.profile-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+// Info Cards
+.info-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 16px;
+    color: #1c1e21;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i {
+      color: #1877f2;
+    }
+  }
+}
+
+// Info Items
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+
+  i {
+    color: #1877f2;
+    margin-right: 12px;
+    font-size: 18px;
+    margin-top: 2px;
+  }
+
+  p, a {
+    margin: 0;
+    color: #050505;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  a {
+    color: #1877f2;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Business Hours
+.hours-list {
+  .hours-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e4e6eb;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .day {
+      font-weight: 500;
+      color: #050505;
+    }
+
+    .hours {
+      color: #65676b;
+    }
+  }
+}
+
+// Amenities Grid
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+
+  .amenity-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f0f2f5;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #e4e6eb;
+    }
+
+    i {
+      color: #1877f2;
+    }
+
+    span {
+      color: #050505;
+      font-size: 15px;
+    }
+  }
+}
+
+// Photo Gallery
+.photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+
+  .photo-item {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+// Loading State
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f0f2f5;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #1877f2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: #65676b;
+    font-size: 16px;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive Design
+@media (max-width: 900px) {
+  .profile-content {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: -50px;
+
+    .profile-photo-container {
+      margin-right: 0;
+      margin-bottom: 20px;
+      top: -50px;
+
+      .profile-photo {
+        width: 150px;
+        height: 150px;
+      }
+    }
+
+    .profile-info {
+      margin-top: 0;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .cover-photo-container {
+    height: 300px;
+  }
+
+  .profile-header {
+    .profile-photo-container {
+      .profile-photo {
+        width: 120px;
+        height: 120px;
+      }
+    }
+
+    .profile-info {
+      h1 {
+        font-size: 24px;
+      }
+    }
+  }
+} 

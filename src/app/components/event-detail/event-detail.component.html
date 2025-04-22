@@ -1,1 +1,84 @@
-<p>event-detail works!</p>
+<div class="event-detail-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state fade-in">
+    <div class="spinner"></div>
+    <p>Loading event details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && error" class="error-state fade-in">
+    <i class="fas fa-exclamation-circle"></i>
+    <h3>Oops! Something went wrong</h3>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Event Content -->
+  <div *ngIf="!isLoading && !error && event" class="event-content fade-in">
+    <div class="event-header">
+      <div class="event-image">
+        <img [src]="event.imageUrl || 'assets/default-event.jpg'" [alt]="event.title">
+        <div class="event-date">
+          <span class="day">{{ event.date | date:'dd' }}</span>
+          <span class="month">{{ event.date | date:'MMM' }}</span>
+        </div>
+      </div>
+      <div class="event-info">
+        <h1 class="event-title">{{ event.title }}</h1>
+        <div class="event-meta">
+          <div class="meta-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>{{ event.location }}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-clock"></i>
+            <span>{{ event.date | date:'shortTime' }}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fas fa-tag"></i>
+            <span class="event-category">{{ event.category }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="event-content">
+      <div class="event-description">
+        <h2>About the Event</h2>
+        <p>{{ event.description }}</p>
+      </div>
+
+      <div class="event-details">
+        <div class="detail-card">
+          <h3>Event Details</h3>
+          <ul class="detail-list">
+            <li>
+              <i class="fas fa-calendar"></i>
+              <span>Date: {{ event.date | date:'fullDate' }}</span>
+            </li>
+            <li>
+              <i class="fas fa-clock"></i>
+              <span>Time: {{ event.date | date:'shortTime' }}</span>
+            </li>
+            <li>
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Location: {{ event.location }}</span>
+            </li>
+            <li>
+              <i class="fas fa-ticket-alt"></i>
+              <span>Price: {{ event.price || 'Free' }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="action-card">
+          <h3>Get Tickets</h3>
+          <p class="ticket-info">Secure your spot at this exciting event!</p>
+          <button class="btn btn-primary" (click)="buyTickets()">
+            <i class="fas fa-ticket-alt"></i>
+            <span>Buy Tickets</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

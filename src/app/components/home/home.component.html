@@ -1,0 +1,68 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Discover Amazing Events</h1>
+      <p>Find and book tickets for the best events in your city</p>
+      <div class="hero-buttons">
+        <a routerLink="/events" class="btn btn-primary">Browse Events</a>
+        <a routerLink="/venues" class="btn btn-secondary">Explore Venues</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section">
+    <h2>Why Choose Us</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <i class="fas fa-ticket-alt"></i>
+        <h3>Easy Booking</h3>
+        <p>Simple and secure ticket booking process</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-map-marker-alt"></i>
+        <h3>Great Venues</h3>
+        <p>Discover the best venues in your city</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-bell"></i>
+        <h3>Stay Updated</h3>
+        <p>Never miss out on your favorite events</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upcoming Events Section -->
+  <section class="events-section">
+    <h2>Upcoming Events</h2>
+    <div class="events-grid">
+      <div *ngFor="let event of events" class="event-card">
+        <div class="event-image">
+          <img [src]="event.image" [alt]="event.title">
+          <div class="event-date">
+            <span class="day">{{ event.date | date:'dd' }}</span>
+            <span class="month">{{ event.date | date:'MMM' }}</span>
+          </div>
+        </div>
+        <div class="event-content">
+          <h3>{{ event.title }}</h3>
+          <p class="event-venue">{{ event.venue }}</p>
+          <a [routerLink]="['/events', event.id]" class="btn btn-primary">View Details</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2>Ready to Find Your Next Event?</h2>
+      <p>Join thousands of event-goers and discover amazing experiences</p>
+      <div class="cta-buttons">
+        <a routerLink="/register" class="btn btn-primary">Get Started</a>
+        <a routerLink="/events" class="btn btn-secondary">Browse Events</a>
+      </div>
+    </div>
+  </section>
+</div> 

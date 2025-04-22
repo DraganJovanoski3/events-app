@@ -1,0 +1,60 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Brand -->
+    <div class="navbar-brand">
+      <a routerLink="/" class="brand-link">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Events</span>
+      </a>
+    </div>
+
+    <!-- Menu Items -->
+    <div class="navbar-menu" [class.is-active]="isMenuOpen">
+      <div class="navbar-start">
+        <a routerLink="/" class="navbar-item" routerLinkActive="active">Home</a>
+        <a routerLink="/events" class="navbar-item" routerLinkActive="active">Events</a>
+        <a routerLink="/venues" class="navbar-item" routerLinkActive="active">Venues</a>
+      </div>
+
+      <div class="navbar-end">
+        <!-- Not Logged In -->
+        <div *ngIf="!isLoggedIn" class="navbar-item">
+          <div class="buttons">
+            <a routerLink="/login" class="btn btn-primary">Log in</a>
+            <a routerLink="/register" class="btn btn-secondary">Sign up</a>
+          </div>
+        </div>
+
+        <!-- Logged In -->
+        <div *ngIf="isLoggedIn" class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            <i class="fas fa-user"></i>
+            <span>{{ username }}</span>
+          </a>
+          <div class="navbar-dropdown">
+            <a (click)="navigateToProfile()" class="navbar-item">
+              <i class="fas fa-user-circle"></i>
+              <span>{{ userRole === 'bar' ? 'My Venue Profile' : 'My Profile' }}</span>
+            </a>
+            <a routerLink="/dashboard" class="navbar-item">
+              <i class="fas fa-tachometer-alt"></i>
+              <span>Dashboard</span>
+            </a>
+            <hr class="navbar-divider">
+            <a (click)="logout()" class="navbar-item">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Burger Menu -->
+    <div class="navbar-burger" (click)="toggleMenu()" [class.is-active]="isMenuOpen">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</nav> 

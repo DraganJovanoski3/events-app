@@ -1,124 +1,254 @@
-<div class="wizard-container">
-  <div class="wizard-header">
-    <h2>Venue Setup Wizard</h2>
-    <div class="progress-bar">
-      <div class="progress" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+<div class="venue-wizard">
+  <div class="wizard-container">
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar" [style.width.%]="progressPercentage"></div>
     </div>
-    <div class="steps">
-      <span [class.active]="currentStep >= 1">Basic Info</span>
-      <span [class.active]="currentStep >= 2">Details</span>
-      <span [class.active]="currentStep >= 3">Amenities</span>
-      <span [class.active]="currentStep >= 4">Hours</span>
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+      <div *ngFor="let step of wizardSteps; let i = index" 
+           class="step-item" 
+           [class.active]="currentStep === i + 1"
+           [class.completed]="isStepCompleted(i + 1)"
+           [class.clickable]="canNavigateToStep(i + 1)"
+           (click)="navigateToStep(i + 1)">
+        <div class="step-icon">
+          <i class="material-icons">{{step.icon}}</i>
+          <div class="check-icon" *ngIf="isStepCompleted(i + 1)">
+            <i class="material-icons">check</i>
+          </div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">{{step.title}}</div>
+          <div class="step-description">{{step.description}}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Content -->
+    <div class="form-container">
+      <div class="step-header">
+        <h2>{{currentStepTitle}}</h2>
+        <p>{{currentStepDescription}}</p>
+      </div>
+
+      <form [formGroup]="venueForm" class="venue-form">
+        <!-- Step 1: Basic Information -->
+        <div *ngIf="currentStep === 1" class="step-content">
+          <div class="form-group">
+            <label for="name">Venue Name *</label>
+            <input type="text" id="name" formControlName="name" placeholder="Enter venue name">
+            <div class="error-message" *ngIf="venueForm.get('name')?.invalid && venueForm.get('name')?.touched">
+              Please enter a valid venue name (minimum 3 characters)
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description *</label>
+            <textarea id="description" formControlName="description" rows="4" 
+                      placeholder="Describe your venue (minimum 50 characters)"></textarea>
+            <div class="error-message" *ngIf="venueForm.get('description')?.invalid && venueForm.get('description')?.touched">
+              Please enter a detailed description (minimum 50 characters)
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="venueType">Venue Type *</label>
+              <select id="venueType" formControlName="venueType">
+                <option value="">Select venue type</option>
+                <option *ngFor="let type of venueTypes" [value]="type">{{type}}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="capacity">Capacity *</label>
+              <input type="number" id="capacity" formControlName="capacity" min="1" placeholder="Enter capacity">
+            </div>
+
+            <div class="form-group">
+              <label for="priceRange">Price Range *</label>
+              <select id="priceRange" formControlName="priceRange">
+                <option value="">Select price range</option>
+                <option value="$">$ - Budget</option>
+                <option value="$$">$$ - Moderate</option>
+                <option value="$$$">$$$ - Premium</option>
+                <option value="$$$$">$$$$ - Luxury</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Location & Contact -->
+        <div *ngIf="currentStep === 2" class="step-content">
+          <div class="form-group">
+            <label for="address">Address *</label>
+            <input type="text" id="address" formControlName="address" placeholder="Enter venue address">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city">City *</label>
+              <input type="text" id="city" formControlName="city" placeholder="Enter city">
+            </div>
+
+            <div class="form-group">
+              <label for="zipCode">ZIP Code *</label>
+              <input type="text" id="zipCode" formControlName="zipCode" placeholder="Enter ZIP code">
+              <div class="error-message" *ngIf="venueForm.get('zipCode')?.invalid && venueForm.get('zipCode')?.touched">
+                Please enter a valid 5-digit ZIP code
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="phone">Phone Number *</label>
+              <input type="tel" id="phone" formControlName="phone" placeholder="Enter phone number">
+              <div class="error-message" *ngIf="venueForm.get('phone')?.invalid && venueForm.get('phone')?.touched">
+                Please enter a valid 10-digit phone number
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" formControlName="email" placeholder="Enter email">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="website">Website</label>
+            <input type="url" id="website" formControlName="website" placeholder="Enter website URL">
+            <div class="error-message" *ngIf="venueForm.get('website')?.invalid && venueForm.get('website')?.touched">
+              Please enter a valid website URL
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Features & Hours -->
+        <div *ngIf="currentStep === 3" class="step-content">
+          <div class="form-group">
+            <label>Amenities</label>
+            <div class="amenities-grid">
+              <div *ngFor="let amenity of amenities" 
+                   class="amenity-item"
+                   [class.selected]="selectedAmenities.includes(amenity)"
+                   (click)="toggleAmenity(amenity)">
+                {{amenity}}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Business Hours</label>
+            <div class="business-hours">
+              <div *ngFor="let day of days" class="day-schedule">
+                <div class="day-name">{{day}}</div>
+                <div class="time-inputs">
+                  <input type="time" 
+                         [formControlName]="day + 'Open'"
+                         (change)="updateBusinessHours(day, 'open', $event)">
+                  <span>to</span>
+                  <input type="time" 
+                         [formControlName]="day + 'Close'"
+                         (change)="updateBusinessHours(day, 'close', $event)">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Photos & Finalize -->
+        <div class="wizard-step" *ngIf="currentStep === 4">
+          <h2>Photos & Finalize</h2>
+          <p>Add photos of your venue to showcase it to potential customers</p>
+
+          <div class="photo-upload-section">
+            <!-- Profile Photo -->
+            <div class="photo-upload-card">
+              <h3>Profile Photo</h3>
+              <p>This will be your venue's main photo</p>
+              <div class="photo-preview" *ngIf="profilePhoto">
+                <img [src]="profilePhoto" alt="Profile photo preview">
+                <button class="remove-btn" (click)="removeImage('profile')">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="upload-area" *ngIf="!profilePhoto">
+                <label for="profile-photo" class="upload-label">
+                  <i class="fas fa-camera"></i>
+                  <span>Upload Profile Photo</span>
+                </label>
+                <input type="file" id="profile-photo" accept="image/*" (change)="onFileSelected($event, 'profile')" hidden>
+              </div>
+            </div>
+
+            <!-- Cover Photo -->
+            <div class="photo-upload-card">
+              <h3>Cover Photo</h3>
+              <p>This will be the background image of your venue profile</p>
+              <div class="photo-preview" *ngIf="coverPhoto">
+                <img [src]="coverPhoto" alt="Cover photo preview">
+                <button class="remove-btn" (click)="removeImage('cover')">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="upload-area" *ngIf="!coverPhoto">
+                <label for="cover-photo" class="upload-label">
+                  <i class="fas fa-image"></i>
+                  <span>Upload Cover Photo</span>
+                </label>
+                <input type="file" id="cover-photo" accept="image/*" (change)="onFileSelected($event, 'cover')" hidden>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gallery Photos -->
+          <div class="gallery-section">
+            <h3>Gallery Photos</h3>
+            <p>Add more photos to showcase your venue</p>
+            <div class="gallery-grid">
+              <div class="gallery-item" *ngFor="let photo of galleryPhotos; let i = index">
+                <img [src]="photo" alt="Gallery photo">
+                <button class="remove-btn" (click)="removeImage('gallery', i)">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="upload-area" *ngIf="galleryPhotos.length < 10">
+                <label for="gallery-photos" class="upload-label">
+                  <i class="fas fa-images"></i>
+                  <span>Add Gallery Photo</span>
+                </label>
+                <input type="file" id="gallery-photos" accept="image/*" (change)="onFileSelected($event, 'gallery')" hidden>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Navigation Buttons -->
+      <div class="navigation-buttons">
+        <button class="btn btn-secondary" 
+                *ngIf="!isFirstStep" 
+                (click)="prevStep()">
+          <i class="material-icons">arrow_back</i>
+          Previous
+        </button>
+        <button class="btn btn-primary" 
+                *ngIf="!isLastStep" 
+                (click)="nextStep()">
+          Next
+          <i class="material-icons">arrow_forward</i>
+        </button>
+        <button class="btn btn-success" 
+                *ngIf="isLastStep" 
+                (click)="submitVenue()"
+                [disabled]="!venueForm.valid">
+          Submit
+          <i class="material-icons">check</i>
+        </button>
+      </div>
     </div>
   </div>
-
-  <form [formGroup]="venueForm" (ngSubmit)="submitVenue()">
-    <!-- Step 1: Basic Information -->
-    <div class="step" *ngIf="currentStep === 1">
-      <h3>Basic Information</h3>
-      <div class="form-group">
-        <label for="name">Venue Name</label>
-        <input type="text" id="name" formControlName="name" placeholder="Enter venue name">
-      </div>
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" formControlName="description" rows="4" placeholder="Describe your venue"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="venueType">Venue Type</label>
-        <select id="venueType" formControlName="venueType">
-          <option value="">Select venue type</option>
-          <option *ngFor="let type of venueTypes" [value]="type">{{type}}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="capacity">Capacity</label>
-        <input type="number" id="capacity" formControlName="capacity" placeholder="Maximum capacity">
-      </div>
-    </div>
-
-    <!-- Step 2: Contact & Location -->
-    <div class="step" *ngIf="currentStep === 2">
-      <h3>Contact & Location</h3>
-      <div class="form-group">
-        <label for="address">Address</label>
-        <input type="text" id="address" formControlName="address" placeholder="Street address">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="city">City</label>
-          <input type="text" id="city" formControlName="city" placeholder="City">
-        </div>
-        <div class="form-group">
-          <label for="zipCode">ZIP Code</label>
-          <input type="text" id="zipCode" formControlName="zipCode" placeholder="ZIP Code">
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="phone">Phone</label>
-        <input type="tel" id="phone" formControlName="phone" placeholder="Phone number">
-      </div>
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" formControlName="email" placeholder="Email address">
-      </div>
-      <div class="form-group">
-        <label for="website">Website (Optional)</label>
-        <input type="url" id="website" formControlName="website" placeholder="Website URL">
-      </div>
-    </div>
-
-    <!-- Step 3: Amenities -->
-    <div class="step" *ngIf="currentStep === 3">
-      <h3>Amenities</h3>
-      <div class="amenities-grid">
-        <div class="amenity-item" *ngFor="let amenity of amenities" 
-             [class.selected]="selectedAmenities.includes(amenity)"
-             (click)="toggleAmenity(amenity)">
-          {{amenity}}
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="priceRange">Price Range</label>
-        <select id="priceRange" formControlName="priceRange">
-          <option value="">Select price range</option>
-          <option value="$">$ (Budget-friendly)</option>
-          <option value="$$">$$ (Moderate)</option>
-          <option value="$$$">$$$ (High-end)</option>
-          <option value="$$$$">$$$$ (Luxury)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Venue Images</label>
-        <input type="file" (change)="onFileSelected($event)" multiple accept="image/*">
-        <div class="image-preview" *ngIf="venueImages.length > 0">
-          <div class="image-item" *ngFor="let image of venueImages; let i = index">
-            <img [src]="image" alt="Venue image">
-            <button type="button" class="remove-image" (click)="removeImage(i)">×</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 4: Business Hours -->
-    <div class="step" *ngIf="currentStep === 4">
-      <h3>Business Hours</h3>
-      <div class="business-hours">
-        <div class="hours-row" *ngFor="let hour of businessHours">
-          <div class="day">{{hour.day}}</div>
-          <div class="time-inputs">
-            <input type="time" [value]="hour.open" (change)="updateBusinessHours(hour.day, 'open', $event)">
-            <span>to</span>
-            <input type="time" [value]="hour.close" (change)="updateBusinessHours(hour.day, 'close', $event)">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="wizard-actions">
-      <button type="button" class="btn-secondary" *ngIf="currentStep > 1" (click)="prevStep()">Previous</button>
-      <button type="button" class="btn-primary" *ngIf="currentStep < totalSteps" (click)="nextStep()">Next</button>
-      <button type="submit" class="btn-primary" *ngIf="currentStep === totalSteps">Complete Setup</button>
-    </div>
-  </form>
 </div> 

@@ -1,15 +1,24 @@
 // event-list.component.ts (snippet)
 import { Component, OnInit } from '@angular/core';
 import { EventService } from '../../services/event.service';
+import { FormsModule } from '@angular/forms';
+import { DatePipe, SlicePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-event-list',
   templateUrl: './event-list.component.html',
-  styleUrls: ['./event-list.component.css']
+  styleUrls: ['./event-list.component.scss'],
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule]
 })
 export class EventListComponent implements OnInit {
   events: any[] = [];
   userCity: string = '';
+  searchQuery: string = '';
+  selectedCategory: string = '';
+  filteredEvents: any[] = [];
 
   constructor(private eventService: EventService) {}
 
@@ -50,16 +59,35 @@ export class EventListComponent implements OnInit {
   loadEvents(city?: string): void {
     this.eventService.getEvents(city).subscribe((data: any[]) => {
       if (data) {
-
         this.events = data;
       } else {
         console.error('No events found for the specified city.');
       }
+    }, error => {
+      console.error('Registration failed', error);
+      // Optionally, show an error message to the user
+    });
+  }
 
-      }, error => {
-        console.error('Registration failed', error);
-        // Optionally, show an error message to the user
-      });
+  onSearch(): void {
+    this.filterEvents();
+  }
 
+  onCategoryChange(): void {
+    this.filterEvents();
+  }
+
+  filterEvents(): void {
+    this.filteredEvents = this.events.filter(event => {
+      const matchesSearch = event.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                          event.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+      const matchesCategory = !this.selectedCategory || event.category === this.selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }
+
+  viewEventDetails(eventId: number): void {
+    // TODO: Implement navigation to event details
+    console.log('Viewing event details for:', eventId);
   }
 }
