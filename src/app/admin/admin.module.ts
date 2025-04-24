@@ -22,10 +22,9 @@ import { AdminAuthGuard } from './guards/admin-auth.guard';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    AdminRoutingModule,
-    AdminLoginComponent,
-    AdminDashboardComponent
+    AdminRoutingModule
   ],
+  declarations: [],
   providers: [
     AdminAuthGuard,
     AdminAuthService,

@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 // const bcrypt = require('bcryptjs');
 const bcrypt = require('bcrypt');
 const db = require('./db');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const port = 3001;
@@ -17,6 +18,9 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(cors());
 app.use(express.json());
+
+// Admin routes
+app.use('/api/admin', adminRoutes);
 
 // Registration Endpoint
 app.post('/auth/register', (req, res) => {

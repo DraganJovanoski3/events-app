@@ -8,9 +8,9 @@ import { AdminModule } from './admin/admin.module';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    AdminModule,
-    AppComponent
+    AdminModule
   ],
+  declarations: [],
   providers: []
 })
 export class AppModule { } 
