@@ -1,0 +1,146 @@
+<div class="venue-events-container">
+  <div class="header">
+    <h1>Manage Events</h1>
+    <button mat-raised-button color="primary" (click)="openCreateEventForm()">
+      <mat-icon>add</mat-icon>
+      Create New Event
+    </button>
+  </div>
+
+  <!-- Event List -->
+  <div class="events-list" *ngIf="!showCreateForm">
+    <div *ngIf="events.length === 0" class="no-events">
+      <mat-icon>event_busy</mat-icon>
+      <p>No events found. Create your first event!</p>
+    </div>
+
+    <div class="event-card" *ngFor="let event of events">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{ event.title }}</mat-card-title>
+          <mat-card-subtitle>
+            {{ event.date | date:'mediumDate' }} 
+            {{ event.startTime }} - {{ event.endTime }}
+          </mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <p>{{ event.description }}</p>
+          <div class="event-details">
+            <div class="detail">
+              <mat-icon>local_offer</mat-icon>
+              <span>{{ event.hasTickets ? 'Tickets Available' : 'Free Entry' }}</span>
+            </div>
+            <div class="detail" *ngIf="event.hasTickets">
+              <mat-icon>attach_money</mat-icon>
+              <span>Price: ${{ event.price }}</span>
+            </div>
+            <div class="detail">
+              <mat-icon>people</mat-icon>
+              <span>Capacity: {{ event.capacity }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-button color="primary" (click)="editEvent(event)">
+            <mat-icon>edit</mat-icon>
+            Edit
+          </button>
+          <button mat-button color="warn" (click)="deleteEvent(event.id)">
+            <mat-icon>delete</mat-icon>
+            Delete
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Create/Edit Event Form -->
+  <div class="event-form" *ngIf="showCreateForm">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ editingEvent ? 'Edit Event' : 'Create New Event' }}</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Event Title</mat-label>
+              <input matInput formControlName="title" placeholder="Enter event title">
+              <mat-error *ngIf="eventForm.get('title')?.hasError('required')">
+                Title is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" placeholder="Enter event description"></textarea>
+              <mat-error *ngIf="eventForm.get('description')?.hasError('required')">
+                Description is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Date</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="date">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="eventForm.get('date')?.hasError('required')">
+                Date is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Start Time</mat-label>
+              <input matInput type="time" formControlName="startTime">
+              <mat-error *ngIf="eventForm.get('startTime')?.hasError('required')">
+                Start time is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>End Time</mat-label>
+              <input matInput type="time" formControlName="endTime">
+              <mat-error *ngIf="eventForm.get('endTime')?.hasError('required')">
+                End time is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-checkbox formControlName="hasTickets">Require Tickets</mat-checkbox>
+          </div>
+
+          <div class="form-row" *ngIf="eventForm.get('hasTickets')?.value">
+            <mat-form-field appearance="outline">
+              <mat-label>Ticket Price</mat-label>
+              <input matInput type="number" formControlName="price" min="0">
+              <mat-error *ngIf="eventForm.get('price')?.hasError('min')">
+                Price must be greater than or equal to 0
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Capacity</mat-label>
+              <input matInput type="number" formControlName="capacity" min="1">
+              <mat-error *ngIf="eventForm.get('capacity')?.hasError('min')">
+                Capacity must be greater than 0
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="cancelForm()">Cancel</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="eventForm.invalid">
+              {{ editingEvent ? 'Update Event' : 'Create Event' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div> 

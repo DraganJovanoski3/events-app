@@ -78,14 +78,14 @@
         </div>
       </div>
 
-      <div class="dashboard-card" *ngIf="hasVenue">
+      <div class="dashboard-card" *ngIf="hasVenue && userRole === 'bar'">
         <div class="card-icon">
-          <i class="fas fa-calendar-alt"></i>
+          <mat-icon>calendar_today</mat-icon>
         </div>
         <div class="card-content">
           <h3>Manage Events</h3>
           <p>Create and manage events at your venue</p>
-          <button class="btn btn-primary">Manage Events</button>
+          <button class="btn btn-primary" (click)="navigateToVenueEvents()">Manage Events</button>
         </div>
       </div>
 

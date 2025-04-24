@@ -20,6 +20,10 @@
               placeholder="Enter your username"
             >
           </div>
+          <div class="error-text" *ngIf="username?.invalid && (username?.dirty || username?.touched)">
+            <span *ngIf="username?.errors?.['required']">Username is required</span>
+            <span *ngIf="username?.errors?.['minlength']">Username must be at least 3 characters</span>
+          </div>
         </div>
 
         <div class="form-row">
@@ -34,6 +38,10 @@
                 placeholder="Enter your password"
               >
             </div>
+            <div class="error-text" *ngIf="password?.invalid && (password?.dirty || password?.touched)">
+              <span *ngIf="password?.errors?.['required']">Password is required</span>
+              <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
+            </div>
           </div>
 
           <div class="form-group">
@@ -46,6 +54,9 @@
                 class="form-input" 
                 placeholder="Confirm your password"
               >
+            </div>
+            <div class="error-text" *ngIf="registerForm.hasError('passwordMismatch') && (confirmPassword?.dirty || confirmPassword?.touched)">
+              Passwords do not match
             </div>
           </div>
         </div>
@@ -65,6 +76,9 @@
               placeholder="Enter your full name"
             >
           </div>
+          <div class="error-text" *ngIf="local_name?.invalid && (local_name?.dirty || local_name?.touched)">
+            <span *ngIf="local_name?.errors?.['required']">Full name is required</span>
+          </div>
         </div>
 
         <div class="form-group">
@@ -77,6 +91,10 @@
               class="form-input" 
               placeholder="Enter your email"
             >
+          </div>
+          <div class="error-text" *ngIf="local_email?.invalid && (local_email?.dirty || local_email?.touched)">
+            <span *ngIf="local_email?.errors?.['required']">Email is required</span>
+            <span *ngIf="local_email?.errors?.['email']">Please enter a valid email</span>
           </div>
         </div>
       </div>
@@ -98,16 +116,16 @@
         <div class="form-group" *ngIf="registerForm.get('role')?.value === 'bar'">
           <label for="venue_detail" class="form-label">Venue Name</label>
           <div class="input-group">
-            <i class="fas fa-store"></i>
+            <mat-icon>store</mat-icon>
             <input
               type="text"
-              id="venue_detail"
-              name="venue_detail"
-              [(ngModel)]="venue_detail"
+              formControlName="venue_detail"
               class="form-input"
               placeholder="Enter your venue name"
-              required
             >
+          </div>
+          <div class="error-text" *ngIf="venue_detail?.invalid && (venue_detail?.dirty || venue_detail?.touched)">
+            <span *ngIf="venue_detail?.errors?.['required']">Venue name is required for venue owners</span>
           </div>
         </div>
       </div>

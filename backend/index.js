@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const db = require('./db');
 const adminRoutes = require('./routes/admin');
+const eventRoutes = require('./routes/events');
 
 const app = express();
 const port = 3001;
@@ -21,6 +22,8 @@ app.use(express.json());
 
 // Admin routes
 app.use('/api/admin', adminRoutes);
+// Events routes
+app.use('/api/events', eventRoutes);
 
 // Registration Endpoint
 app.post('/auth/register', (req, res) => {

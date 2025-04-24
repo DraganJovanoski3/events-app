@@ -8,6 +8,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddEventComponent } from './components/add-event/add-event.component';
 import { VenueWizardComponent } from './components/venue-wizard/venue-wizard.component';
 import { VenueProfileComponent } from './components/venue-profile/venue-profile.component';
+import { VenueEventsComponent } from './components/venue-events/venue-events.component';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -34,6 +35,12 @@ export const routes: Routes = [
   { 
     path: 'profile', 
     component: VenueProfileComponent,
+    canActivate: [authGuard],
+    data: { requiresVenueOwner: true }
+  },
+  { 
+    path: 'venue/events', 
+    component: VenueEventsComponent,
     canActivate: [authGuard],
     data: { requiresVenueOwner: true }
   },

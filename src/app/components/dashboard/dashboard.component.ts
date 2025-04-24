@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, MatIconModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -71,5 +72,19 @@ export class DashboardComponent implements OnInit {
   
   navigateToLogin() {
     this.router.navigate(['/login']);
+  }
+
+  navigateToVenueEvents() {
+    console.log('Current user role:', this.userRole);
+    console.log('Has venue:', this.hasVenue);
+    console.log('Attempting to navigate to venue events...');
+    this.router.navigateByUrl('/venue/events').then(
+      (success) => {
+        console.log('Navigation success:', success);
+      },
+      (error) => {
+        console.error('Navigation error:', error);
+      }
+    );
   }
 }
