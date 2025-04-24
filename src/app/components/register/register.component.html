@@ -1,135 +1,137 @@
 <div class="register-container">
   <div class="register-card">
     <div class="register-header">
-      <h1>Create Account</h1>
-      <p>Join our community</p>
+      <h1>Create an Account</h1>
+      <p>Join our community and start managing your events</p>
     </div>
 
-    <form (ngSubmit)="onSubmit()" class="register-form">
-      <div class="form-group">
-        <label for="username" class="form-label">Username</label>
-        <div class="input-group">
-          <i class="fas fa-user"></i>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            [(ngModel)]="username"
-            class="form-input"
-            placeholder="Choose a username"
-            required
-          >
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      <!-- Basic Information Section -->
+      <div class="form-section">
+        <h3>Basic Information</h3>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <div class="input-group">
+            <mat-icon>person</mat-icon>
+            <input 
+              type="text" 
+              formControlName="username" 
+              class="form-input" 
+              placeholder="Enter your username"
+            >
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+              <mat-icon>lock</mat-icon>
+              <input 
+                type="password" 
+                formControlName="password" 
+                class="form-input" 
+                placeholder="Enter your password"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <div class="input-group">
+              <mat-icon>lock</mat-icon>
+              <input 
+                type="password" 
+                formControlName="confirmPassword" 
+                class="form-input" 
+                placeholder="Confirm your password"
+              >
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="password" class="form-label">Password</label>
-        <div class="input-group">
-          <i class="fas fa-lock"></i>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            [(ngModel)]="password"
-            class="form-input"
-            placeholder="Create a password"
-            required
-          >
+      <!-- Personal Information Section -->
+      <div class="form-section">
+        <h3>Personal Information</h3>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <div class="input-group">
+            <mat-icon>badge</mat-icon>
+            <input 
+              type="text" 
+              formControlName="local_name" 
+              class="form-input" 
+              placeholder="Enter your full name"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <div class="input-group">
+            <mat-icon>email</mat-icon>
+            <input 
+              type="email" 
+              formControlName="local_email" 
+              class="form-input" 
+              placeholder="Enter your email"
+            >
+          </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="confirmPassword" class="form-label">Confirm Password</label>
-        <div class="input-group">
-          <i class="fas fa-lock"></i>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            [(ngModel)]="confirmPassword"
-            class="form-input"
-            placeholder="Confirm your password"
-            required
-          >
+      <!-- Account Type Section -->
+      <div class="form-section">
+        <h3>Account Type</h3>
+        <div class="form-group">
+          <label class="form-label">Select Account Type</label>
+          <div class="input-group">
+            <mat-icon>account_circle</mat-icon>
+            <select formControlName="role" class="form-input">
+              <option value="user">Regular User</option>
+              <option value="bar">Venue Owner</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="registerForm.get('role')?.value === 'bar'">
+          <label for="venue_detail" class="form-label">Venue Name</label>
+          <div class="input-group">
+            <i class="fas fa-store"></i>
+            <input
+              type="text"
+              id="venue_detail"
+              name="venue_detail"
+              [(ngModel)]="venue_detail"
+              class="form-input"
+              placeholder="Enter your venue name"
+              required
+            >
+          </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="local_name" class="form-label">Full Name</label>
-        <div class="input-group">
-          <i class="fas fa-user-circle"></i>
-          <input
-            type="text"
-            id="local_name"
-            name="local_name"
-            [(ngModel)]="local_name"
-            class="form-input"
-            placeholder="Enter your full name"
-            required
-          >
-        </div>
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage }}</span>
       </div>
 
-      <div class="form-group">
-        <label for="local_email" class="form-label">Email</label>
-        <div class="input-group">
-          <i class="fas fa-envelope"></i>
-          <input
-            type="email"
-            id="local_email"
-            name="local_email"
-            [(ngModel)]="local_email"
-            class="form-input"
-            placeholder="Enter your email"
-            required
-          >
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="role" class="form-label">Account Type</label>
-        <div class="input-group">
-          <i class="fas fa-user-tag"></i>
-          <select
-            id="role"
-            name="role"
-            [(ngModel)]="role"
-            class="form-input"
-            required
-          >
-            <option value="user">Regular User</option>
-            <option value="bar">Venue Owner</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group" *ngIf="role === 'bar'">
-        <label for="venue_detail" class="form-label">Venue Name</label>
-        <div class="input-group">
-          <i class="fas fa-store"></i>
-          <input
-            type="text"
-            id="venue_detail"
-            name="venue_detail"
-            [(ngModel)]="venue_detail"
-            class="form-input"
-            placeholder="Enter your venue name"
-            required
-          >
-        </div>
-      </div>
-
-      <div class="form-group" *ngIf="error">
-        <div class="error-message">
-          <i class="fas fa-exclamation-circle"></i>
-          {{ error }}
-        </div>
-      </div>
-
-      <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+      <!-- Submit Button -->
+      <button 
+        type="submit" 
+        class="submit-button"
+        [disabled]="registerForm.invalid || isLoading"
+      >
         <span *ngIf="!isLoading">Create Account</span>
-        <span *ngIf="isLoading">Creating Account...</span>
+        <div *ngIf="isLoading" class="spinner"></div>
       </button>
+
+      <!-- Login Link -->
+      <div class="login-link">
+        Already have an account? <a routerLink="/login">Sign in</a>
+      </div>
     </form>
   </div>
 </div>

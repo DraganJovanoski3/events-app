@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ImageService } from '../../services/image.service';
 
 interface BusinessHours {
   open: string;
@@ -23,8 +24,12 @@ interface VenueDetails {
   capacity: number;
   priceRange: string;
   amenities?: string[];
-  images?: string[];
-  businessHours?: Record<string, BusinessHours>;
+  images?: {
+    profile?: string;
+    cover?: string;
+    gallery?: string[];
+  };
+  businessHours?: Record<string, { open: string; close: string }>;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -93,12 +98,14 @@ export class VenueWizardComponent implements OnInit {
   ];
 
   completedSteps: Set<number> = new Set();
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private imageService: ImageService
   ) {
     this.venueForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -172,33 +179,51 @@ export class VenueWizardComponent implements OnInit {
       ...businessHoursControls
     });
 
+    // Initialize galleryPhotos array
+    this.galleryPhotos = [];
+
     // If user already has venue details, populate the form
     if (currentUser.bar_detail) {
-      const venueDetails = JSON.parse(currentUser.bar_detail as string) as VenueDetails;
-      const { businessHours, ...otherDetails } = venueDetails;
-      
-      this.venueForm.patchValue(otherDetails);
-      
-      // Set business hours
-      if (businessHours) {
-        Object.entries(businessHours).forEach(([day, hours]) => {
-          this.venueForm.patchValue({
-            [`${day}Open`]: hours.open,
-            [`${day}Close`]: hours.close
+      try {
+        const venueDetails = JSON.parse(currentUser.bar_detail as string) as VenueDetails;
+        const { businessHours, images, amenities, ...otherDetails } = venueDetails;
+        
+        // Set form values
+        this.venueForm.patchValue(otherDetails);
+        
+        // Set business hours
+        if (businessHours) {
+          Object.entries(businessHours).forEach(([day, hours]) => {
+            this.venueForm.patchValue({
+              [`${day}Open`]: hours.open,
+              [`${day}Close`]: hours.close
+            });
           });
-        });
-      }
+        }
 
-      // Set amenities
-      if (venueDetails.amenities) {
-        this.selectedAmenities = venueDetails.amenities;
-      }
+        // Set amenities
+        if (amenities) {
+          this.selectedAmenities = amenities;
+        }
 
-      // Set images
-      if (venueDetails.images) {
-        this.profilePhoto = venueDetails.images[0] || null;
-        this.coverPhoto = venueDetails.images[0] || null;
-        this.galleryPhotos = venueDetails.images;
+        // Set images
+        if (images) {
+          if (images.profile) {
+            this.profilePhoto = images.profile;
+          }
+          if (images.cover) {
+            this.coverPhoto = images.cover;
+          }
+          if (images.gallery && Array.isArray(images.gallery)) {
+            this.galleryPhotos = [...images.gallery];
+          }
+        }
+
+        // Mark all completed steps
+        this.completedSteps = new Set([1, 2, 3, 4]);
+      } catch (error) {
+        console.error('Error parsing venue details:', error);
+        this.errorMessage = 'Error loading venue details. Please try again.';
       }
     }
   }
@@ -278,25 +303,47 @@ export class VenueWizardComponent implements OnInit {
     }
   }
 
-  onFileSelected(event: any, type: 'profile' | 'cover' | 'gallery') {
-    const files = event.target.files;
-    if (files) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        const imageUrl = e.target.result;
-        switch (type) {
-          case 'profile':
-            this.profilePhoto = imageUrl;
-            break;
-          case 'cover':
-            this.coverPhoto = imageUrl;
-            break;
-          case 'gallery':
-            this.galleryPhotos.push(imageUrl);
-            break;
+  async onFileSelected(event: Event, type: 'profile' | 'cover' | 'gallery') {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    try {
+      const compressedImage = await this.imageService.compressImage(file);
+      
+      if (type === 'profile') {
+        this.profilePhoto = compressedImage;
+      } else if (type === 'cover') {
+        this.coverPhoto = compressedImage;
+      } else if (type === 'gallery') {
+        if (this.galleryPhotos.length >= 10) {
+          this.errorMessage = 'Maximum 10 gallery photos allowed';
+          return;
         }
-      };
-      reader.readAsDataURL(files[0]);
+        this.galleryPhotos.push(compressedImage);
+      }
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      this.errorMessage = 'Failed to process image. Please try again.';
+    }
+  }
+
+  async onGalleryFilesSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+
+    const files = Array.from(input.files);
+    if (this.galleryPhotos.length + files.length > 10) {
+      this.errorMessage = 'Maximum 10 gallery photos allowed';
+      return;
+    }
+
+    try {
+      const compressedImages = await this.imageService.compressMultipleImages(files);
+      this.galleryPhotos.push(...compressedImages);
+    } catch (error) {
+      console.error('Error compressing images:', error);
+      this.errorMessage = 'Failed to process images. Please try again.';
     }
   }
 
@@ -329,97 +376,188 @@ export class VenueWizardComponent implements OnInit {
       const currentUser = this.authService.getCurrentUser();
       if (!currentUser) {
         console.error('No user logged in');
+        this.errorMessage = 'You must be logged in to save venue details.';
         return;
       }
 
-      // Log form values
-      console.log('Form values:', this.venueForm.value);
-      console.log('Selected amenities:', this.selectedAmenities);
-
-      // Prepare business hours data
-      const businessHours = this.days.reduce((acc, day) => {
-        acc[day] = {
-          open: this.venueForm.get(`${day}Open`)?.value || '09:00',
-          close: this.venueForm.get(`${day}Close`)?.value || '17:00'
-        };
-        return acc;
-      }, {} as Record<string, { open: string; close: string }>);
-
-      console.log('Business hours:', businessHours);
-
-      // Prepare the venue details
-      const venueDetail = {
-        ...this.venueForm.value,
-        amenities: this.selectedAmenities,
-        businessHours: this.businessHours,
-        images: {
-          profile: this.profilePhoto || null,
-          cover: this.coverPhoto || null,
-          gallery: this.galleryPhotos
-        }
-      };
-
-      // Prepare the payload for the API
-      const payload = {
-        username: currentUser.username,
-        barDetail: JSON.stringify(venueDetail),
-        localName: this.venueForm.value.name,
-        localEmail: this.venueForm.value.email,
-        role: 'bar',
-        status: 'active'
-      };
-
-      console.log('Final payload:', payload);
-
-      // Make the API call to update venue details
-      this.http.put('http://localhost:3001/api/venue', payload).subscribe({
-        next: (response: any) => {
-          console.log('Venue data updated successfully:', response);
-          
-          // Update the current user with the new venue data
-          const updatedUser = {
-            ...currentUser,
-            bar_detail: JSON.stringify(venueDetail),
-            local_name: this.venueForm.value.name,
-            local_email: this.venueForm.value.email,
-            role: 'bar',
-            status: 'active'
+      try {
+        // Prepare business hours data
+        const businessHours = this.days.reduce((acc, day) => {
+          const openTime = this.venueForm.get(`${day}Open`)?.value || '09:00';
+          const closeTime = this.venueForm.get(`${day}Close`)?.value || '17:00';
+          acc[day] = {
+            open: openTime,
+            close: closeTime
           };
-          
-          // Update the user in AuthService
-          this.authService.updateUser(updatedUser);
-          
-          // Show success message
-          alert('Venue details saved successfully!');
-          
-          // Navigate to dashboard
-          this.router.navigate(['/dashboard']);
-        },
-        error: (error) => {
-          console.error('Error updating venue data:', error);
-          console.error('Error details:', error.error);
-          console.error('Error status:', error.status);
-          console.error('Error message:', error.message);
-          
-          let errorMessage = 'Failed to save venue details. Please try again.';
-          
-          // Check for missing fields in the error response
-          if (error.error && error.error.message) {
-            errorMessage = error.error.message;
-          } else if (error.error && error.error.errors) {
-            const missingFields = Object.keys(error.error.errors)
-              .filter(key => error.error.errors[key].kind === 'required')
-              .map(key => `- ${key}`)
-              .join('\n');
-            
-            if (missingFields) {
-              errorMessage = `Please fill in the following required fields:\n${missingFields}`;
+          return acc;
+        }, {} as Record<string, { open: string; close: string }>);
+
+        // Get existing venue details if any
+        let existingImages = {
+          profile: null,
+          cover: null,
+          gallery: []
+        };
+
+        if (currentUser.bar_detail) {
+          try {
+            const existingDetails = JSON.parse(currentUser.bar_detail as string);
+            if (existingDetails.images) {
+              existingImages = existingDetails.images;
             }
+          } catch (error) {
+            console.error('Error parsing existing venue details:', error);
           }
-          
-          alert(errorMessage);
         }
-      });
+
+        // Validate gallery photos
+        if (this.galleryPhotos.length > 10) {
+          this.errorMessage = 'Maximum 10 gallery photos allowed';
+          return;
+        }
+
+        // Validate image sizes
+        const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+        const validateImageSize = (image: string | null) => {
+          if (!image) return true;
+          // Remove data URL prefix to get base64 data
+          const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
+          // Calculate size in bytes
+          const size = Math.ceil((base64Data.length * 3) / 4);
+          return size <= MAX_IMAGE_SIZE;
+        };
+
+        // Check image sizes
+        if (this.profilePhoto && !validateImageSize(this.profilePhoto)) {
+          this.errorMessage = 'Profile photo is too large. Maximum size is 5MB.';
+          return;
+        }
+        if (this.coverPhoto && !validateImageSize(this.coverPhoto)) {
+          this.errorMessage = 'Cover photo is too large. Maximum size is 5MB.';
+          return;
+        }
+        if (this.galleryPhotos.some(photo => !validateImageSize(photo))) {
+          this.errorMessage = 'One or more gallery photos are too large. Maximum size is 5MB per photo.';
+          return;
+        }
+
+        // Log the current state of images
+        console.log('Current image states:', {
+          profilePhoto: this.profilePhoto ? 'present' : 'missing',
+          coverPhoto: this.coverPhoto ? 'present' : 'missing',
+          galleryPhotos: this.galleryPhotos.length,
+          existingImages: existingImages
+        });
+
+        // Prepare the venue details with properly formatted images
+        const venueDetail = {
+          name: this.venueForm.value.name,
+          description: this.venueForm.value.description,
+          address: this.venueForm.value.address,
+          city: this.venueForm.value.city,
+          zipCode: this.venueForm.value.zipCode,
+          phone: this.venueForm.value.phone,
+          email: this.venueForm.value.email,
+          website: this.venueForm.value.website || '',
+          venueType: this.venueForm.value.venueType,
+          capacity: Number(this.venueForm.value.capacity),
+          priceRange: this.venueForm.value.priceRange,
+          amenities: this.selectedAmenities,
+          businessHours: businessHours,
+          images: {
+            profile: this.profilePhoto || existingImages.profile,
+            cover: this.coverPhoto || existingImages.cover,
+            gallery: this.galleryPhotos.length > 0 ? this.galleryPhotos : (existingImages.gallery || [])
+          }
+        };
+
+        // Log the complete venue details being sent (without image data)
+        console.log('Complete venue details being sent:', {
+          ...venueDetail,
+          images: {
+            profile: venueDetail.images.profile ? 'present' : 'missing',
+            cover: venueDetail.images.cover ? 'present' : 'missing',
+            gallery: venueDetail.images.gallery.length
+          }
+        });
+
+        // Prepare the payload for the API
+        const payload = {
+          username: currentUser.username,
+          barDetail: JSON.stringify(venueDetail),
+          localName: this.venueForm.value.name,
+          localEmail: this.venueForm.value.email,
+          role: 'bar',
+          status: 'active'
+        };
+
+        // Log the final payload (without image data)
+        console.log('Final payload being sent:', {
+          ...payload,
+          barDetail: '...' // Don't log the full barDetail as it contains image data
+        });
+
+        // Make the API call to update venue details
+        this.http.put('http://localhost:3001/api/venue', payload).subscribe({
+          next: (response: any) => {
+            console.log('Venue data updated successfully:', response);
+            
+            // Update the current user with the new venue data
+            const updatedUser = {
+              ...currentUser,
+              bar_detail: JSON.stringify(venueDetail),
+              local_name: this.venueForm.value.name,
+              local_email: this.venueForm.value.email,
+              role: 'bar',
+              status: 'active'
+            };
+            
+            // Update the user in AuthService
+            this.authService.updateUser(updatedUser);
+            
+            // Show success message
+            alert('Venue details saved successfully!');
+            
+            // Navigate to dashboard
+            this.router.navigate(['/dashboard']);
+          },
+          error: (error) => {
+            console.error('Error updating venue data:', error);
+            console.error('Error response:', error.error);
+            console.error('Error status:', error.status);
+            
+            let errorMessage = 'Failed to save venue details. Please try again.';
+            
+            if (error.status === 400) {
+              if (error.error && error.error.message) {
+                errorMessage = error.error.message;
+              } else if (error.error && error.error.errors) {
+                const missingFields = Object.keys(error.error.errors)
+                  .filter(key => error.error.errors[key].kind === 'required')
+                  .map(key => `- ${key}`)
+                  .join('\n');
+                
+                if (missingFields) {
+                  errorMessage = `Please fill in the following required fields:\n${missingFields}`;
+                }
+              }
+            } else if (error.status === 401) {
+              errorMessage = 'Your session has expired. Please log in again.';
+            } else if (error.status === 403) {
+              errorMessage = 'You do not have permission to perform this action.';
+            } else if (error.status === 500) {
+              errorMessage = 'Server error. Please try again later.';
+              console.error('Server error details:', error.error);
+              console.error('Request payload size:', JSON.stringify(payload).length);
+            }
+            
+            this.errorMessage = errorMessage;
+          }
+        });
+      } catch (error) {
+        console.error('Error preparing venue data:', error);
+        this.errorMessage = 'Error preparing venue data. Please try again.';
+      }
     } else {
       // Get all invalid fields
       const invalidFields = Object.keys(this.venueForm.controls)
@@ -432,7 +570,7 @@ export class VenueWizardComponent implements OnInit {
         this.venueForm.get(key)?.markAsTouched();
       });
       
-      alert(`Please fill in the following required fields correctly:\n${invalidFields}`);
+      this.errorMessage = `Please fill in the following required fields correctly:\n${invalidFields}`;
     }
   }
 }

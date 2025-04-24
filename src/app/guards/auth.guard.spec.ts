@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { AuthGuard } from './auth.guard';
+import { authGuard } from './auth.guard';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { of } from 'rxjs';
 
 describe('AuthGuard', () => {
-  let guard: AuthGuard;
+  let guard: typeof authGuard;
   let authServiceMock: any;
   let routerMock: any;
 
@@ -15,13 +15,13 @@ describe('AuthGuard', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        AuthGuard,
+        authGuard,
         { provide: AuthService, useValue: authServiceMock },
         { provide: Router, useValue: routerMock }
       ]
     });
 
-    guard = TestBed.inject(AuthGuard);
+    guard = TestBed.inject(authGuard);
   });
 
   it('should be created', () => {

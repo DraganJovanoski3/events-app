@@ -1,6 +1,7 @@
 // index.js
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 // Use bcryptjs as a drop-in replacement if needed:
 // const bcrypt = require('bcryptjs');
 const bcrypt = require('bcrypt');
@@ -9,6 +10,10 @@ const db = require('./db');
 const app = express();
 const port = 3001;
 const saltRounds = 10;
+
+// Increase payload size limit
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(cors());
 app.use(express.json());
@@ -165,6 +170,27 @@ app.put('/api/venue', (req, res) => {
       bar_detail: barDetail,
       local_name: localName,
       local_email: localEmail
+    });
+  });
+});
+
+// Delete all users endpoint (for development/testing only)
+app.delete('/api/users/all', (req, res) => {
+  // This is a dangerous operation, so we'll add a simple check
+  if (process.env.NODE_ENV !== 'development') {
+    return res.status(403).json({ message: 'This operation is only allowed in development mode.' });
+  }
+
+  const deleteQuery = 'DELETE FROM users';
+  db.query(deleteQuery, (err, results) => {
+    if (err) {
+      console.error('Error deleting users:', err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    res.json({
+      message: `Successfully deleted ${results.affectedRows} users.`,
+      affectedRows: results.affectedRows
     });
   });
 });

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ImageService } from '../../services/image.service';
 
 interface VenueDetails {
   name: string;
@@ -38,10 +39,13 @@ export class VenueProfileComponent implements OnInit {
   profilePhoto: string | null = null;
   galleryPhotos: string[] = [];
   errorMessage = '';
+  imageLoadingStates: { [key: string]: boolean } = {};
+  imageErrors: { [key: string]: string } = {};
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private imageService: ImageService
   ) {}
 
   ngOnInit() {
@@ -51,63 +55,128 @@ export class VenueProfileComponent implements OnInit {
   private loadVenueProfile() {
     this.isLoading = true;
     this.errorMessage = '';
-
     const currentUser = this.authService.getCurrentUser();
-    console.log('Loading venue profile for user:', currentUser);
-
+    
     if (!currentUser) {
-      console.error('No user found');
-      this.errorMessage = 'No user found. Please log in again.';
+      this.errorMessage = 'You must be logged in to view venue details.';
       this.isLoading = false;
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    if (currentUser.role !== 'bar') {
-      console.error('User is not a venue owner');
-      this.errorMessage = 'You must be a venue owner to view this page.';
-      this.isLoading = false;
-      this.router.navigate(['/dashboard']);
       return;
     }
 
     if (!currentUser.bar_detail) {
-      console.error('No venue details found');
       this.errorMessage = 'No venue details found. Please set up your venue first.';
       this.isLoading = false;
       return;
     }
 
     try {
-      this.venueDetails = JSON.parse(currentUser.bar_detail as string);
-      console.log('Successfully loaded venue details:', this.venueDetails);
+      console.log('Raw bar_detail:', currentUser.bar_detail);
+      const venueDetails = JSON.parse(currentUser.bar_detail as string);
+      console.log('Parsed venue details:', venueDetails);
 
-      // Handle images
-      if (this.venueDetails?.images) {
-        this.profilePhoto = this.venueDetails.images.profile || null;
-        this.coverPhoto = this.venueDetails.images.cover || null;
-        this.galleryPhotos = this.venueDetails.images.gallery || [];
-        
-        // If no specific profile/cover photos are set, use the first gallery photo
-        if (!this.profilePhoto && this.galleryPhotos.length > 0) {
-          this.profilePhoto = this.galleryPhotos[0];
-        }
-        if (!this.coverPhoto && this.galleryPhotos.length > 0) {
-          this.coverPhoto = this.galleryPhotos[0];
-        }
+      if (!venueDetails || typeof venueDetails !== 'object') {
+        throw new Error('Invalid venue details format');
       }
 
       // Validate required fields
-      if (!this.venueDetails?.name || !this.venueDetails?.description) {
-        console.error('Missing required venue details');
-        this.errorMessage = 'Venue details are incomplete. Please update your venue information.';
+      const requiredFields: (keyof VenueDetails)[] = [
+        'name', 'description', 'address', 'city', 'zipCode', 
+        'phone', 'email', 'venueType', 'capacity', 'priceRange'
+      ];
+
+      const missingFields = requiredFields.filter(field => {
+        const value = venueDetails[field];
+        return value === undefined || value === null || value === '';
+      });
+
+      if (missingFields.length > 0) {
+        console.error('Missing required fields:', missingFields);
+        this.errorMessage = `Venue details are incomplete. Missing: ${missingFields.join(', ')}. Please update your venue information.`;
+        this.isLoading = false;
+        return;
       }
+
+      this.venueDetails = venueDetails;
+
+      // Handle images
+      if (venueDetails.images) {
+        console.log('Processing images:', venueDetails.images);
+        const images = venueDetails.images;
+        
+        // Set profile photo
+        if (images.profile) {
+          console.log('Setting profile photo');
+          this.imageLoadingStates['profile'] = true;
+          this.profilePhoto = this.imageService.decompressImage(images.profile);
+          this.loadImage(this.profilePhoto, 'profile');
+        } else if (images.gallery && images.gallery.length > 0) {
+          console.log('Using first gallery photo as profile photo');
+          this.imageLoadingStates['profile'] = true;
+          this.profilePhoto = this.imageService.decompressImage(images.gallery[0]);
+          this.loadImage(this.profilePhoto, 'profile');
+        }
+
+        // Set cover photo
+        if (images.cover) {
+          console.log('Setting cover photo');
+          this.imageLoadingStates['cover'] = true;
+          this.coverPhoto = this.imageService.decompressImage(images.cover);
+          this.loadImage(this.coverPhoto, 'cover');
+        } else if (images.gallery && images.gallery.length > 0) {
+          console.log('Using first gallery photo as cover photo');
+          this.imageLoadingStates['cover'] = true;
+          this.coverPhoto = this.imageService.decompressImage(images.gallery[0]);
+          this.loadImage(this.coverPhoto, 'cover');
+        }
+
+        // Set gallery photos
+        if (images.gallery && Array.isArray(images.gallery)) {
+          console.log('Setting gallery photos:', images.gallery.length);
+          this.galleryPhotos = images.gallery.map((photo: string, index: number) => {
+            const imageUrl = this.imageService.decompressImage(photo);
+            this.imageLoadingStates[`gallery-${index}`] = true;
+            this.loadImage(imageUrl, `gallery-${index}`);
+            return imageUrl;
+          });
+        }
+      } else {
+        console.log('No images found in venue details');
+      }
+
     } catch (error) {
-      console.error('Error parsing venue details:', error);
-      this.errorMessage = 'Error loading venue details. Please try again.';
+      console.error('Error loading venue profile:', error);
+      if (error instanceof SyntaxError) {
+        this.errorMessage = 'Invalid venue data format. Please contact support.';
+      } else if (error instanceof Error) {
+        this.errorMessage = error.message;
+      } else {
+        this.errorMessage = 'Error loading venue details. Please try again.';
+      }
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private loadImage(imageUrl: string, imageKey: string) {
+    const img = new Image();
+    img.onload = () => {
+      this.imageLoadingStates[imageKey] = false;
+      delete this.imageErrors[imageKey];
+    };
+    img.onerror = () => {
+      this.imageLoadingStates[imageKey] = false;
+      this.imageErrors[imageKey] = 'Failed to load image';
+      console.error(`Error loading image: ${imageKey}`);
+    };
+    img.src = imageUrl;
+  }
+
+  getImageLoadingState(imageKey: string): boolean {
+    return this.imageLoadingStates[imageKey] || false;
+  }
+
+  getImageError(imageKey: string): string | null {
+    return this.imageErrors[imageKey] || null;
   }
 
   getPriceRangeSymbols(priceRange: string): string {

@@ -207,20 +207,27 @@
           <!-- Gallery Photos -->
           <div class="gallery-section">
             <h3>Gallery Photos</h3>
-            <p>Add more photos to showcase your venue</p>
+            <p>Add more photos to showcase your venue (max 10 photos)</p>
+            <div class="error-message" *ngIf="errorMessage">
+              <i class="fas fa-exclamation-circle"></i>
+              <span>{{ errorMessage }}</span>
+            </div>
             <div class="gallery-grid">
               <div class="gallery-item" *ngFor="let photo of galleryPhotos; let i = index">
-                <img [src]="photo" alt="Gallery photo">
-                <button class="remove-btn" (click)="removeImage('gallery', i)">
-                  <i class="fas fa-times"></i>
-                </button>
+                <div class="photo-preview">
+                  <img [src]="photo" alt="Gallery photo">
+                  <button class="remove-btn" (click)="removeImage('gallery', i)">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
               </div>
               <div class="upload-area" *ngIf="galleryPhotos.length < 10">
                 <label for="gallery-photos" class="upload-label">
                   <i class="fas fa-images"></i>
-                  <span>Add Gallery Photo</span>
+                  <span>Add Gallery Photos</span>
+                  <small>Click to select multiple photos</small>
                 </label>
-                <input type="file" id="gallery-photos" accept="image/*" (change)="onFileSelected($event, 'gallery')" hidden>
+                <input type="file" id="gallery-photos" accept="image/*" multiple (change)="onGalleryFilesSelected($event)" hidden>
               </div>
             </div>
           </div>

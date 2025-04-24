@@ -16,7 +16,14 @@
     <!-- Cover Photo -->
     <div class="cover-photo-container">
       <div class="cover-photo" *ngIf="coverPhoto">
-        <img [src]="coverPhoto" alt="Venue cover photo">
+        <div class="image-loading" *ngIf="getImageLoadingState('cover')">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <div class="image-error" *ngIf="getImageError('cover')">
+          <i class="fas fa-exclamation-circle"></i>
+          <span>Failed to load cover photo</span>
+        </div>
+        <img [src]="coverPhoto" alt="Venue cover photo" (load)="imageLoadingStates['cover'] = false" (error)="imageErrors['cover'] = 'Failed to load image'">
       </div>
       <div class="cover-overlay"></div>
     </div>
@@ -25,7 +32,14 @@
     <div class="profile-header">
       <div class="profile-photo-container">
         <div class="profile-photo" *ngIf="profilePhoto">
-          <img [src]="profilePhoto" alt="Venue profile photo">
+          <div class="image-loading" *ngIf="getImageLoadingState('profile')">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <div class="image-error" *ngIf="getImageError('profile')">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Failed to load profile photo</span>
+          </div>
+          <img [src]="profilePhoto" alt="Venue profile photo" (load)="imageLoadingStates['profile'] = false" (error)="imageErrors['profile'] = 'Failed to load image'">
         </div>
       </div>
       <div class="profile-info">
@@ -109,9 +123,19 @@
         <!-- Photo Gallery -->
         <div class="info-card" *ngIf="galleryPhotos.length">
           <h2><i class="fas fa-images"></i> Photo Gallery</h2>
-          <div class="photo-gallery">
-            <div class="photo-item" *ngFor="let image of galleryPhotos">
-              <img [src]="image" alt="Venue photo" (click)="openImage(image)">
+          <div class="gallery-section" *ngIf="galleryPhotos.length > 0">
+            <h3>Gallery Photos</h3>
+            <div class="gallery-grid">
+              <div class="gallery-item" *ngFor="let photo of galleryPhotos; let i = index">
+                <div class="image-loading" *ngIf="getImageLoadingState('gallery-' + i)">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="image-error" *ngIf="getImageError('gallery-' + i)">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <span>Failed to load image</span>
+                </div>
+                <img [src]="photo" alt="Gallery photo" (load)="imageLoadingStates['gallery-' + i] = false" (error)="imageErrors['gallery-' + i] = 'Failed to load image'">
+              </div>
             </div>
           </div>
         </div>

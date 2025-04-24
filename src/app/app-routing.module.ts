@@ -18,8 +18,12 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { requiresVenueOwner: true }
   },
-  { path: '', redirectTo: '/home', pathMatch: 'full' }, // Redirect root to Home
-  { path: '**', redirectTo: '/home' } // Wildcard route
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule)
+  },
+  { path: '', redirectTo: '/home', pathMatch: 'full' },
+  { path: '**', redirectTo: '/home' }
 ];
 
 @NgModule({

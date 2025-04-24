@@ -1,0 +1,117 @@
+<div class="admin-dashboard">
+  <!-- Admin Header -->
+  <div class="admin-header">
+    <div class="header-left">
+      <h1>Admin Dashboard</h1>
+      <p>Welcome back, {{ getUser()?.username }}</p>
+    </div>
+    <button mat-button class="logout-button" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Logout
+    </button>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="stats-grid">
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ stats.totalUsers }}</h3>
+          <p>Total Users</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>person</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ stats.activeUsers }}</h3>
+          <p>Active Users</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>business</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ stats.totalVenues }}</h3>
+          <p>Total Venues</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>event</mat-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ stats.totalEvents }}</h3>
+          <p>Total Events</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dashboard-content">
+    <!-- Quick Actions -->
+    <mat-card class="actions-card">
+      <mat-card-header>
+        <mat-card-title>Quick Actions</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="actions-grid">
+          <button mat-button class="action-button" (click)="navigateTo('users')">
+            <mat-icon>people</mat-icon>
+            <span>Manage Users</span>
+          </button>
+          <button mat-button class="action-button" (click)="navigateTo('analytics')">
+            <mat-icon>analytics</mat-icon>
+            <span>View Analytics</span>
+          </button>
+          <button mat-button class="action-button" (click)="navigateTo('venues')">
+            <mat-icon>business</mat-icon>
+            <span>Manage Venues</span>
+          </button>
+          <button mat-button class="action-button" (click)="navigateTo('events')">
+            <mat-icon>event</mat-icon>
+            <span>Manage Events</span>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Recent Activity -->
+    <mat-card class="activity-card">
+      <mat-card-header>
+        <mat-card-title>Recent Activity</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="activity-list">
+          <div *ngFor="let activity of recentActivity" class="activity-item">
+            <mat-icon [class]="activity.type">{{ activity.icon }}</mat-icon>
+            <div class="activity-details">
+              <div class="activity-description">{{ activity.description }}</div>
+              <div class="activity-time">{{ activity.time }}</div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-overlay">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+</div> 

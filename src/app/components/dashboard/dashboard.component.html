@@ -50,9 +50,9 @@
     <!-- Venue Owner Dashboard -->
     <div class="dashboard-cards" *ngIf="userRole === 'bar'">
       <!-- Debug info - remove in production -->
-      <div class="debug-info" *ngIf="userRole === 'bar'">
+      <!-- <div class="debug-info" *ngIf="userRole === 'bar'">
         <p>Debug: User Role: {{ userRole }}, Has Venue: {{ hasVenue }}</p>
-      </div>
+      </div> -->
       
       <!-- Show this card if venue is NOT set up -->
       <div class="dashboard-card venue-setup-card" *ngIf="!hasVenue">

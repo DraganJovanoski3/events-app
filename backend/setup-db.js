@@ -36,13 +36,13 @@ async function setupDatabase() {
     await connection.query('DROP TABLE IF EXISTS users');
     await connection.query('DROP TABLE IF EXISTS categories');
 
-    // Create users table
+    // Create users table with admin role
     await connection.query(`
       CREATE TABLE users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(50) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
-        role ENUM('user', 'bar') NOT NULL,
+        role ENUM('user', 'bar', 'admin') NOT NULL,
         bar_detail TEXT,
         local_name VARCHAR(100),
         local_email VARCHAR(100),

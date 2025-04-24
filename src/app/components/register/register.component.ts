@@ -1,94 +1,100 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconModule
+  ]
 })
-export class RegisterComponent {
-  username = '';
-  password = '';
-  confirmPassword = '';
-  local_name = '';
-  local_email = '';
-  role = 'user';
-  venue_detail = '';
-  error = '';
+export class RegisterComponent implements OnInit {
+  registerForm: FormGroup;
   isLoading = false;
+  errorMessage = '';
 
   constructor(
+    private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    this.registerForm = this.fb.group({
+      username: ['', [Validators.required, Validators.minLength(3)]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]],
+      local_name: ['', [Validators.required]],
+      local_email: ['', [Validators.required, Validators.email]],
+      role: ['user', [Validators.required]],
+      venue_detail: ['']
+    }, { validator: this.passwordMatchValidator });
+  }
 
-  onSubmit() {
-    // Reset error message
-    this.error = '';
+  ngOnInit(): void {
+    // Check if user is already logged in
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/dashboard']);
+    }
+  }
 
-    // Validate passwords match
-    if (this.password !== this.confirmPassword) {
-      this.error = 'Passwords do not match';
-      return;
-    }
+  passwordMatchValidator(g: FormGroup) {
+    return g.get('password')?.value === g.get('confirmPassword')?.value
+      ? null
+      : { mismatch: true };
+  }
 
-    // Validate all required fields
-    if (!this.username.trim()) {
-      this.error = 'Username is required';
-      return;
-    }
-    if (!this.password.trim()) {
-      this.error = 'Password is required';
-      return;
-    }
-    if (!this.local_name.trim()) {
-      this.error = 'Name is required';
-      return;
-    }
-    if (!this.local_email.trim()) {
-      this.error = 'Email is required';
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.local_email)) {
-      this.error = 'Please enter a valid email address';
-      return;
-    }
-
-    // Validate password strength
-    if (this.password.length < 6) {
-      this.error = 'Password must be at least 6 characters long';
+  onSubmit(): void {
+    if (this.registerForm.invalid) {
+      this.errorMessage = 'Please fill in all required fields correctly.';
       return;
     }
 
     this.isLoading = true;
+    this.errorMessage = '';
 
-    const userData = {
-      username: this.username.trim(),
-      password: this.password,
-      role: this.role,
-      local_name: this.local_name.trim(),
-      local_email: this.local_email.trim(),
-      venue_detail: this.role === 'bar' ? this.venue_detail : undefined
+    const formData = {
+      username: this.registerForm.get('username')?.value,
+      password: this.registerForm.get('password')?.value,
+      local_name: this.registerForm.get('local_name')?.value,
+      local_email: this.registerForm.get('local_email')?.value,
+      role: this.registerForm.get('role')?.value,
+      venue_detail: this.registerForm.get('venue_detail')?.value
     };
 
-    this.authService.register(userData)
-      .subscribe({
-        next: () => {
-          this.isLoading = false;
-          this.router.navigate(['/dashboard']);
-        },
-        error: (error) => {
-          this.error = error.error?.message || 'Registration failed. Please try again.';
-          this.isLoading = false;
+    this.authService.register(formData).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.router.navigate(['/login'], { 
+          queryParams: { registered: 'true' } 
+        });
+      },
+      error: (error) => {
+        this.isLoading = false;
+        if (error.status === 400) {
+          this.errorMessage = 'Username or email already exists.';
+        } else if (error.status === 422) {
+          this.errorMessage = 'Please check your input and try again.';
+        } else {
+          this.errorMessage = 'An error occurred. Please try again later.';
         }
-      });
+      }
+    });
   }
+
+  get username() { return this.registerForm.get('username'); }
+  get password() { return this.registerForm.get('password'); }
+  get confirmPassword() { return this.registerForm.get('confirmPassword'); }
+  get local_name() { return this.registerForm.get('local_name'); }
+  get local_email() { return this.registerForm.get('local_email'); }
+  get role() { return this.registerForm.get('role'); }
+  get venue_detail() { return this.registerForm.get('venue_detail'); }
 }
